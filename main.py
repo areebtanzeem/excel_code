@@ -147,8 +147,10 @@ def combine_files(filename1,filename2):
     #s1.replace({'NaT': None}).dropna(how="all")
     #s1['one'] = s1['one'].dt.round('S')
     s1.drop_duplicates(subset=['one'], keep=False, inplace=True)
+    selected_date = s1[["one"]]
     s1.insert(3,'blank','')
-    s1['six'] = s1['one']
+    s1.insert(4,'fourth',selected_date)
+    #s1['six'] = s1['one']
     #s1['one'] = pandas.to_datetime(s1['one'])
     writer = pandas.ExcelWriter("merge_sheet1_sheet2.xlsx", engine='xlsxwriter')
     s1.to_excel(writer, sheet_name='Sheet1', index=False)
@@ -180,3 +182,18 @@ if os.path.exists(path+"temp_"+filenames[1]):
 
 if os.path.exists("merge_sheet1_sheet2.xlsx"):
     os.remove("merge_sheet1_sheet2.xlsx")
+print("*****************************************")
+print("*****************************************")
+
+print("                       ")
+print("                       ")
+
+print("File converted successfully!!")
+print("Press Enter to Continue!")
+print("                       ")
+print("                       ")
+
+print("*****************************************")
+print("*****************************************")
+input()
+sys.exit()
