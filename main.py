@@ -4,6 +4,7 @@ from os.path import join, dirname, realpath
 import pandas
 from openpyxl import load_workbook
 import datetime
+from shutil import copyfile
 
 if not os.path.exists("files"):
     os.mkdir("files")
@@ -15,6 +16,37 @@ path = join(dirname(realpath(__file__)), 'files/')
 # If difference is greater than 1 then add a new row
 # else don't do anythng
 ##################################
+
+def main(filename):
+    df = pandas.read_excel(filename,names=['one', 'two', 'three'])
+    writer1 = pandas.ExcelWriter(path+"temp_"+filename, engine='xlsxwriter')
+    df.to_excel(writer1, sheet_name='Added_Blank_Space', index=False)
+    writer1.save()
+
+
+    df.drop_duplicates(subset=['one'], keep=False, inplace=True)
+    df['difference'] = df.one.diff(1)
+    list = df.values.tolist()
+    list2 = []
+    for i in list:
+        if i[3] > datetime.timedelta(seconds=1):
+            list2.append(["","",""])
+            list2.append([i[0],i[1],i[2]])
+        else:
+            list2.append([i[0],i[1],i[2]])
+    
+    df1 = pandas.DataFrame(list2, columns = ['one' , 'two', 'three'])
+    writer = pandas.ExcelWriter(path+filename, engine='xlsxwriter')
+    df1.to_excel(writer, sheet_name='Added_Blank_Space', index=False)
+    writer.save()
+    print(df)
+    #print(df.dtypes)
+
+
+
+
+
+
 def add_blank_rows(filename):
     data = []
     data2 = []
@@ -42,10 +74,10 @@ def add_blank_rows(filename):
     for j in duplicate_index:
         #print(j)
         del data2[j]   
-    df = pandas.DataFrame(data2,columns=['one', 'two', 'three'])
-    writer = pandas.ExcelWriter(path+filename, engine='xlsxwriter')
-    df.to_excel(writer, sheet_name='Added_Blank_Space', index=False)
-    writer.save()
+    #df = pandas.DataFrame(data2,columns=['one', 'two', 'three'])
+    #writer = pandas.ExcelWriter(path+filename, engine='xlsxwriter')
+    #df.to_excel(writer, sheet_name='Added_Blank_Space', index=False)
+    #writer.save()
 
     df2 = pandas.DataFrame(data,columns=['one', 'two', 'three'])
     writer2 = pandas.ExcelWriter(path+"temp_"+filename, engine='xlsxwriter')
@@ -160,6 +192,37 @@ def combine_files(filename1,filename2):
 
 
 
+def merge_converter(filename):
+    df = pandas.read_excel(filename)
+    df.drop_duplicates(subset=['one'], keep=False, inplace=True)
+    #df.loc['Total'] = pandas.Series(df.sum())
+    df.insert(7,'seven','')
+    df['two_percentage'] = df['two'].apply(lambda a: (a/df['two'].sum())*100 )
+    df['five_percentage'] = df['five'].apply(lambda a: (a/df['five'].sum())*100 )
+    df['two_percentage_difference'] = df.two_percentage.diff()
+    df['five_percentage_difference'] = df.five_percentage.diff()
+    df['two_percentage_difference_a'] = df.apply(lambda x: x['two_percentage_difference'] if x['two_percentage_difference']*x['five_percentage_difference'] > 0 else "", axis=1)
+    df['five_percentage_difference_a'] = df.apply(lambda x: x['five_percentage_difference'] if x['two_percentage_difference']*x['five_percentage_difference'] > 0 else "", axis=1)
+    df['two_percentage_difference_positive'] = df['two_percentage_difference_a'].apply(lambda x : abs(x) if x != "" else "" )
+    df['five_percentage_difference_positive'] = df['five_percentage_difference_a'].apply(lambda x : abs(x) if x != "" else "" )
+    
+    df['two_percentage_difference_a'] = df['two_percentage_difference_positive']
+    df['five_percentage_difference_a'] = df['five_percentage_difference_positive']
+    
+    del df['two_percentage_difference_positive']
+    del df['five_percentage_difference_positive']
+
+    writer = pandas.ExcelWriter(path+"merge_converter.xlsx", engine='xlsxwriter')
+    df.to_excel(writer, sheet_name='Sheet1', index=False)
+    writer.save()
+    print(df)
+
+
+
+
+
+
+
 filenames = ["sheet1.xlsx","sheet2.xlsx"]
 for filename in filenames:
     if not os.path.exists(filename):
@@ -170,9 +233,16 @@ for filename in filenames:
         pass
 for filename in filenames:
     print(filename)
-    add_blank_rows(filename)
+    copyfile(filename, path+"temp_"+filename)
+    #add_blank_rows(filename)
+    main(filename)
 
 combine_files(path+"temp_"+filenames[0],path+"temp_"+filenames[1])
+
+if os.path.exists(path+"merge_sheet1_sheet2.xlsx"):
+    pass
+    merge_converter(path+"merge_sheet1_sheet2.xlsx")
+
 
 if os.path.exists(path+"temp_"+filenames[0]):
     os.remove(path+"temp_"+filenames[0])
