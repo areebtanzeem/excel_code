@@ -5,6 +5,7 @@ import pandas
 from openpyxl import load_workbook
 import datetime
 from shutil import copyfile
+import numpy as np
 
 if not os.path.exists("files"):
     os.mkdir("files")
@@ -201,16 +202,45 @@ def merge_converter(filename):
     df['five_percentage'] = df['five'].apply(lambda a: (a/df['five'].sum())*100 )
     df['two_percentage_difference'] = df.two_percentage.diff()
     df['five_percentage_difference'] = df.five_percentage.diff()
-    df['two_percentage_difference_a'] = df.apply(lambda x: x['two_percentage_difference'] if x['two_percentage_difference']*x['five_percentage_difference'] > 0 else "", axis=1)
-    df['five_percentage_difference_a'] = df.apply(lambda x: x['five_percentage_difference'] if x['two_percentage_difference']*x['five_percentage_difference'] > 0 else "", axis=1)
-    df['two_percentage_difference_positive'] = df['two_percentage_difference_a'].apply(lambda x : abs(x) if x != "" else "" )
-    df['five_percentage_difference_positive'] = df['five_percentage_difference_a'].apply(lambda x : abs(x) if x != "" else "" )
+    df['two_percentage_difference_a'] = df.apply(lambda x: x['two_percentage_difference'] if x['two_percentage_difference']*x['five_percentage_difference'] > 0 else np.NaN, axis=1)
+    df['five_percentage_difference_a'] = df.apply(lambda x: x['five_percentage_difference'] if x['two_percentage_difference']*x['five_percentage_difference'] > 0 else np.NaN, axis=1)
+    df['two_percentage_difference_positive'] = df['two_percentage_difference_a'].apply(lambda x : abs(x) if x != "" else np.NaN )
+    df['five_percentage_difference_positive'] = df['five_percentage_difference_a'].apply(lambda x : abs(x) if x != "" else np.NaN )
     
     df['two_percentage_difference_a'] = df['two_percentage_difference_positive']
     df['five_percentage_difference_a'] = df['five_percentage_difference_positive']
     
     del df['two_percentage_difference_positive']
     del df['five_percentage_difference_positive']
+    print(df['two_percentage_difference_a'])
+    print(df['five_percentage_difference_a'])
+    try:
+
+        sum_two_percentage_difference_a = df['two_percentage_difference_a'].sum()
+        sum_five_percentage_difference_a = df['five_percentage_difference_a'].sum() 
+
+        percent_sum_two_percentage_difference_a = (sum_two_percentage_difference_a/(sum_two_percentage_difference_a+sum_five_percentage_difference_a))*100
+        percent_sum_five_percentage_difference_a = (sum_five_percentage_difference_a/(sum_two_percentage_difference_a+sum_five_percentage_difference_a))*100
+
+        s1 = pandas.Series(data = {0:sum_two_percentage_difference_a,2:percent_sum_two_percentage_difference_a})
+        s2 = pandas.Series(data = {0:sum_five_percentage_difference_a,2:percent_sum_five_percentage_difference_a})
+        df['pec_two'] = s1
+        df['pec_five'] = s2
+        print("##################################")
+        print("##################################")
+        print("##################################")
+        print("##################################")
+        print(s1)
+        print(s2)
+        print([sum_five_percentage_difference_a,percent_sum_five_percentage_difference_a])
+        print("##################################")
+        print("##################################")
+        print("##################################")
+        print("##################################")
+
+        
+    except Exception as e:
+        print(str(e))
 
     writer = pandas.ExcelWriter(path+"merge_converter.xlsx", engine='xlsxwriter')
     df.to_excel(writer, sheet_name='Sheet1', index=False)
@@ -233,14 +263,13 @@ for filename in filenames:
         pass
 for filename in filenames:
     print(filename)
-    copyfile(filename, path+"temp_"+filename)
-    #add_blank_rows(filename)
+    #copyfile(filename, path+"temp_"+filename)
+    add_blank_rows(filename)
     main(filename)
 
 combine_files(path+"temp_"+filenames[0],path+"temp_"+filenames[1])
 
 if os.path.exists(path+"merge_sheet1_sheet2.xlsx"):
-    pass
     merge_converter(path+"merge_sheet1_sheet2.xlsx")
 
 
