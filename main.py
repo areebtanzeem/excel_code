@@ -58,23 +58,23 @@ def add_blank_rows(filename):
     for row in sheet.iter_rows(values_only=True):
         data.append(row)
 
-    for i in range(0,len(data)-1):
-        diff = data[i+1][0]-data[i][0]
-        print(data[i+1][0])
-        print(diff)
-        data2.append(list(data[i]))
-        if int(float(str(diff).split(":")[2])) > 1:
-            data2.append(list(("","","")))
-        elif int(float(str(diff).split(":")[2])) == 0:
-            duplicate_index.append(i)
-            duplicate_index.append(i+1)
-    for line in data2:
+    #for i in range(0,len(data)-1):
+    #    diff = data[i+1][0]-data[i][0]
+    #    print(data[i+1][0])
+    #    print(diff)
+    #    data2.append(list(data[i]))
+    #    if int(float(str(diff).split(":")[2])) > 1:
+    #        data2.append(list(("","","")))
+    #    elif int(float(str(diff).split(":")[2])) == 0:
+    #        duplicate_index.append(i)
+    #        duplicate_index.append(i+1)
+    #for line in data2:
         #print(line)
-        pass
+    #    pass
     #print(duplicate_index)
-    for j in duplicate_index:
+    #for j in duplicate_index:
         #print(j)
-        del data2[j]   
+    #    del data2[j]   
     #df = pandas.DataFrame(data2,columns=['one', 'two', 'three'])
     #writer = pandas.ExcelWriter(path+filename, engine='xlsxwriter')
     #df.to_excel(writer, sheet_name='Added_Blank_Space', index=False)
@@ -198,26 +198,47 @@ def merge_converter(filename):
     df.drop_duplicates(subset=['one'], keep=False, inplace=True)
     #df.loc['Total'] = pandas.Series(df.sum())
     df.insert(7,'seven','')
+    # PERCENTAGE CALCULATIONS
     df['two_percentage'] = df['two'].apply(lambda a: (a/df['two'].sum())*100 )
+    df['three_percentage'] = df['three'].apply(lambda a: (a/df['three'].sum())*100)
     df['five_percentage'] = df['five'].apply(lambda a: (a/df['five'].sum())*100 )
-    df['two_percentage_difference'] = df.two_percentage.diff()
-    df['five_percentage_difference'] = df.five_percentage.diff()
-    df['two_percentage_difference_a'] = df.apply(lambda x: x['two_percentage_difference'] if x['two_percentage_difference']*x['five_percentage_difference'] > 0 else np.NaN, axis=1)
-    df['five_percentage_difference_a'] = df.apply(lambda x: x['five_percentage_difference'] if x['two_percentage_difference']*x['five_percentage_difference'] > 0 else np.NaN, axis=1)
-    df['two_percentage_difference_positive'] = df['two_percentage_difference_a'].apply(lambda x : abs(x) if x != "" else np.NaN )
-    df['five_percentage_difference_positive'] = df['five_percentage_difference_a'].apply(lambda x : abs(x) if x != "" else np.NaN )
+    df['six_percentage'] = df['six'].apply(lambda a: (a/df['six'].sum())*100 )
     
-    df['two_percentage_difference_a'] = df['two_percentage_difference_positive']
-    df['five_percentage_difference_a'] = df['five_percentage_difference_positive']
+    #PERCENTAGE CALCULATED
+
+    df['sum_two_three_percent'] = df.apply(lambda row: row.two_percentage + row.three_percentage, axis=1)
+    df['sum_five_six_percent'] = df.apply(lambda row: row.five_percentage + row.six_percentage, axis=1)
+
+    #DIFFERENCE 
+
+    df['sum_two_three_difference'] = df.two_percentage.diff()
+    df['sum_five_six_difference'] = df.five_percentage.diff()
     
-    del df['two_percentage_difference_positive']
-    del df['five_percentage_difference_positive']
-    print(df['two_percentage_difference_a'])
-    print(df['five_percentage_difference_a'])
+    #DIFFERENCE ENDS
+
+    #SAME SAME
+
+    df['sum_two_three_difference_a'] = df.apply(lambda x: x['sum_two_three_difference'] if x['sum_two_three_difference']*x['sum_five_six_difference'] > 0 else np.NaN, axis=1)
+    df['sum_five_six_difference_a'] = df.apply(lambda x: x['sum_five_six_difference'] if x['sum_two_three_difference']*x['sum_five_six_difference'] > 0 else np.NaN, axis=1)
+    
+    #SaME SAME
+
+    #CONVERTING SAME SAME TO POSITIVE
+
+    df['sum_two_three_difference_positive'] = df['sum_two_three_difference_a'].apply(lambda x : abs(x) if x != "" else np.NaN )
+    df['sum_five_six_difference_positive'] = df['sum_five_six_difference_a'].apply(lambda x : abs(x) if x != "" else np.NaN )
+    
+    df['sum_two_three_difference_a'] = df['sum_two_three_difference_positive']
+    df['sum_five_six_difference_a'] = df['sum_five_six_difference_positive']
+    
+    del df['sum_two_three_difference_positive']
+    del df['sum_five_six_difference_positive']
+    print(df['sum_two_three_difference_a'])
+    print(df['sum_five_six_difference_a'])
     try:
 
-        sum_two_percentage_difference_a = df['two_percentage_difference_a'].sum()
-        sum_five_percentage_difference_a = df['five_percentage_difference_a'].sum() 
+        sum_two_percentage_difference_a = df['sum_two_three_difference_a'].sum()
+        sum_five_percentage_difference_a = df['sum_five_six_difference_a'].sum() 
 
         percent_sum_two_percentage_difference_a = (sum_two_percentage_difference_a/(sum_two_percentage_difference_a+sum_five_percentage_difference_a))*100
         percent_sum_five_percentage_difference_a = (sum_five_percentage_difference_a/(sum_two_percentage_difference_a+sum_five_percentage_difference_a))*100
@@ -264,13 +285,29 @@ for filename in filenames:
 for filename in filenames:
     print(filename)
     #copyfile(filename, path+"temp_"+filename)
-    add_blank_rows(filename)
-    main(filename)
+    try:
 
-combine_files(path+"temp_"+filenames[0],path+"temp_"+filenames[1])
+        add_blank_rows(filename)
+    except Exception as e:
+        print(f"Add Blank Rows error of {filename}")
+        print(str(e))
+    try:
+        main(filename)
+    except Exception as e:
+        print(f"Main Function error of {filename}")
+        print(str(e))
+try:
+    combine_files(path+"temp_"+filenames[0],path+"temp_"+filenames[1])
+except Exception as e:
+        print(f"Combine_files error")
+        print(str(e))    
 
 if os.path.exists(path+"merge_sheet1_sheet2.xlsx"):
-    merge_converter(path+"merge_sheet1_sheet2.xlsx")
+    try:
+        merge_converter(path+"merge_sheet1_sheet2.xlsx")
+    except Exception as e:
+        print(f"Merge Converter error")
+        print(str(e))
 
 
 if os.path.exists(path+"temp_"+filenames[0]):
