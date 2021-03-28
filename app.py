@@ -180,8 +180,14 @@ def combine_files(filename1,filename2):
     # TODO CODE HERE
     # ALGORITHM
     #FIRST COMBINE BOTH
-    df1 = pandas.read_excel(filename1)
-    df2 = pandas.read_excel(filename2)
+    df1 = pandas.read_excel(path+filename1)
+    df2 = pandas.read_excel(path+filename2)
+
+    #DROPPING BLANK LINES FROM DF1 AND DF2
+
+    df1.drop_duplicates(subset=['one'], keep=False, inplace=True)
+    df2.drop_duplicates(subset=['one'], keep=False, inplace=True)
+
     print(df1)
     print(df2)
     s1 = pandas.merge(df1, df2, how='inner', on="one")
@@ -305,8 +311,8 @@ for filename in filenames:
         print(f"Main Function error of {filename}")
         print(str(e))
 try:
-    pass
-    #combine_files(path+"temp_"+filenames[0],path+"temp_"+filenames[1])
+    #pass
+    combine_files(filenames[0],filenames[1])
 except Exception as e:
         print(f"Combine_files error")
         print(str(e))    
