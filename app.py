@@ -24,10 +24,18 @@ def main(filename):
     df.to_excel(writer1, sheet_name='Added_Blank_Space', index=False)
     writer1.save()
 
+    # For B column average and for C column sun
+    print("Duplicate entries for file: ",filename)
+    #ids = df["one"]
+    print(pandas.concat(g for _, g in df.groupby("one") if len(g) > 1))
+        
+    df2 = df.groupby(['one'],as_index = False).agg({'two': 'mean', 'three': 'sum'})
 
-    df.drop_duplicates(subset=['one'], keep=False, inplace=True)
-    df['difference'] = df.one.diff(1)
-    list = df.values.tolist()
+    # For B column average and for C column sun Ends Here
+
+    #df.drop_duplicates(subset=['one'], keep=False, inplace=True)
+    df2['difference'] = df2.one.diff(1)
+    list = df2.values.tolist()
     list2 = []
     for i in list:
         if i[3] > datetime.timedelta(seconds=1):
@@ -36,11 +44,11 @@ def main(filename):
         else:
             list2.append([i[0],i[1],i[2]])
     
-    df1 = pandas.DataFrame(list2, columns = ['one' , 'two', 'three'])
+    df3 = pandas.DataFrame(list2, columns = ['one' , 'two', 'three'])
     writer = pandas.ExcelWriter(path+filename, engine='xlsxwriter')
-    df1.to_excel(writer, sheet_name='Added_Blank_Space', index=False)
+    df3.to_excel(writer, sheet_name='Added_Blank_Space', index=False)
     writer.save()
-    print(df)
+    print(df3)
     #print(df.dtypes)
 
 
@@ -286,8 +294,8 @@ for filename in filenames:
     print(filename)
     #copyfile(filename, path+"temp_"+filename)
     try:
-
-        add_blank_rows(filename)
+        pass
+        #add_blank_rows(filename)
     except Exception as e:
         print(f"Add Blank Rows error of {filename}")
         print(str(e))
@@ -297,14 +305,16 @@ for filename in filenames:
         print(f"Main Function error of {filename}")
         print(str(e))
 try:
-    combine_files(path+"temp_"+filenames[0],path+"temp_"+filenames[1])
+    pass
+    #combine_files(path+"temp_"+filenames[0],path+"temp_"+filenames[1])
 except Exception as e:
         print(f"Combine_files error")
         print(str(e))    
 
 if os.path.exists(path+"merge_sheet1_sheet2.xlsx"):
     try:
-        merge_converter(path+"merge_sheet1_sheet2.xlsx")
+        pass
+        #merge_converter(path+"merge_sheet1_sheet2.xlsx")
     except Exception as e:
         print(f"Merge Converter error")
         print(str(e))
