@@ -195,7 +195,7 @@ def combine_files(filename1,filename2):
 
 def merge_converter(filename):
     df = pandas.read_excel(filename)
-    df.drop_duplicates(subset=['one'], keep=False, inplace=True)
+    #df.drop_duplicates(subset=['one'], keep=False, inplace=True)
     #df.loc['Total'] = pandas.Series(df.sum())
     df.insert(7,'seven','')
     # PERCENTAGE CALCULATIONS
@@ -206,62 +206,30 @@ def merge_converter(filename):
     
     #PERCENTAGE CALCULATED
 
-    df['sum_two_three_percent'] = df.apply(lambda row: row.two_percentage + row.three_percentage, axis=1)
-    df['sum_five_six_percent'] = df.apply(lambda row: row.five_percentage + row.six_percentage, axis=1)
+    
 
     #DIFFERENCE 
 
-    df['sum_two_three_difference'] = df.two_percentage.diff()
-    df['sum_five_six_difference'] = df.five_percentage.diff()
+    df['two_p_diff'] = df.two_percentage.diff()
+    df['five_p_diff'] = df.five_percentage.diff()
     
     #DIFFERENCE ENDS
 
     #SAME SAME
 
-    df['sum_two_three_difference_a'] = df.apply(lambda x: x['sum_two_three_difference'] if x['sum_two_three_difference']*x['sum_five_six_difference'] > 0 else np.NaN, axis=1)
-    df['sum_five_six_difference_a'] = df.apply(lambda x: x['sum_five_six_difference'] if x['sum_two_three_difference']*x['sum_five_six_difference'] > 0 else np.NaN, axis=1)
+    df['two_p_diff_a'] = df.apply(lambda x: x['two_p_diff'] if x['two_p_diff']*x['five_p_diff'] > 0 else np.NaN, axis=1)
+    df['five_p_diff_a'] = df.apply(lambda x: x['five_p_diff'] if x['two_p_diff']*x['five_p_diff'] > 0 else np.NaN, axis=1)
     
     #SaME SAME
 
     #CONVERTING SAME SAME TO POSITIVE
+    df['two_p_diff'] = df['two_p_diff_a']
+    df['five_p_diff'] = df['five_p_diff_a']
 
-    df['sum_two_three_difference_positive'] = df['sum_two_three_difference_a'].apply(lambda x : abs(x) if x != "" else np.NaN )
-    df['sum_five_six_difference_positive'] = df['sum_five_six_difference_a'].apply(lambda x : abs(x) if x != "" else np.NaN )
+    del df['five_p_diff_a']
+    del df['two_p_diff_a']
     
-    df['sum_two_three_difference_a'] = df['sum_two_three_difference_positive']
-    df['sum_five_six_difference_a'] = df['sum_five_six_difference_positive']
     
-    del df['sum_two_three_difference_positive']
-    del df['sum_five_six_difference_positive']
-    print(df['sum_two_three_difference_a'])
-    print(df['sum_five_six_difference_a'])
-    try:
-
-        sum_two_percentage_difference_a = df['sum_two_three_difference_a'].sum()
-        sum_five_percentage_difference_a = df['sum_five_six_difference_a'].sum() 
-
-        percent_sum_two_percentage_difference_a = (sum_two_percentage_difference_a/(sum_two_percentage_difference_a+sum_five_percentage_difference_a))*100
-        percent_sum_five_percentage_difference_a = (sum_five_percentage_difference_a/(sum_two_percentage_difference_a+sum_five_percentage_difference_a))*100
-
-        s1 = pandas.Series(data = {0:sum_two_percentage_difference_a,2:percent_sum_two_percentage_difference_a})
-        s2 = pandas.Series(data = {0:sum_five_percentage_difference_a,2:percent_sum_five_percentage_difference_a})
-        df['pec_two'] = s1
-        df['pec_five'] = s2
-        print("##################################")
-        print("##################################")
-        print("##################################")
-        print("##################################")
-        print(s1)
-        print(s2)
-        print([sum_five_percentage_difference_a,percent_sum_five_percentage_difference_a])
-        print("##################################")
-        print("##################################")
-        print("##################################")
-        print("##################################")
-
-        
-    except Exception as e:
-        print(str(e))
 
     writer = pandas.ExcelWriter(path+"merge_converter.xlsx", engine='xlsxwriter')
     df.to_excel(writer, sheet_name='Sheet1', index=False)

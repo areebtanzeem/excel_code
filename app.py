@@ -139,35 +139,6 @@ def add_blank_rows_two(filename):
 
 def combine_files(filename1, filename2):
 
-    #workbook1 = load_workbook(filename=filename1)
-    #sheet1 = workbook1['Added_Blank_Space']
-
-    #workbook2 = load_workbook(filename=filename2)
-    #sheet2 = workbook2['Added_Blank_Space']
-
-    #data1 = []
-    #data2 = []
-    #final_data = []
-    #data1_index = []
-    #data2_index = []
-    #print("data1 length",len(data1))
-    #print("data2 length",len(data2))
-    # for row1 in sheet1.iter_rows(values_only=True):
-    #   data1.append(list(row1))
-
-   # for row2 in sheet2.iter_rows(values_only=True):
-   #     data2.append(list(row2))
-
-    #    for i in range(len(data1)-1):
-    #        for j in range(len(data2)-1):
-    #            if data1[i][0] in data2[j]:
-    #                pass
-    #            else:
-    #                data1_index.append(i)
-    #                data2_index.append(j)
-
-    #    print(data2_index)
-    #    print(data1_index)
 
     # TODO CODE HERE
     # ALGORITHM
@@ -192,11 +163,11 @@ def combine_files(filename1, filename2):
     #s1['six'] = s1['one']
     #s1['one'] = pandas.to_datetime(s1['one'])
     writer = pandas.ExcelWriter(
-        "merge_sheet1_sheet2.xlsx", engine='xlsxwriter')
+        path+"merge_sheet1_sheet2.xlsx", engine='xlsxwriter')
     s1.to_excel(writer, sheet_name='Sheet1', index=False)
     writer.save()
     print(s1)
-    add_blank_rows_two("merge_sheet1_sheet2.xlsx")
+    #add_blank_rows_two("merge_sheet1_sheet2.xlsx")
 
 
 def merge_converter(filename):
@@ -205,13 +176,13 @@ def merge_converter(filename):
     #df.loc['Total'] = pandas.Series(df.sum())
     df.insert(7, 'seven', '')
     # PERCENTAGE CALCULATIONS
-    df['two_percentage'] = df['two'].apply(lambda a: (a/df['two'].sum())*100)
-    df['five_percentage'] = df['five'].apply(
-        lambda a: (a/df['five'].sum())*100)
-    df['three_percentage'] = df['three'].apply(
-        lambda a: (a/df['three'].sum())*100)
+    df['two_percentage'] = df['two_x'].apply(lambda a: (a/df['two_x'].sum())*100)
+    df['five_percentage'] = df['two_y'].apply(
+        lambda a: (a/df['two_y'].sum())*100)
+    df['three_percentage'] = df['three_x'].apply(
+        lambda a: (a/df['three_x'].sum())*100)
     
-    df['six_percentage'] = df['six'].apply(lambda a: (a/df['six'].sum())*100)
+    df['six_percentage'] = df['three_y'].apply(lambda a: (a/df['three_y'].sum())*100)
 
     # PERCENTAGE CALCULATED
 
@@ -222,8 +193,8 @@ def merge_converter(filename):
 
     df['two_p_diff'] = df.two_percentage.diff()
     df['five_p_diff'] = df.five_percentage.diff()
-    df['three_p_diff'] = df.three_percentage.diff()
-    df['six_p_diff'] = df.six_percentage.diff()
+    #df['three_p_diff'] = df.three_percentage.diff()
+    #df['six_p_diff'] = df.six_percentage.diff()
 
     # DIFFERENCE ENDS
 
@@ -231,8 +202,8 @@ def merge_converter(filename):
 
     df['two_p_same'] = df.apply(lambda x: x['two_p_diff'] if x['two_p_diff']*x['five_p_diff'] > 0 else np.NaN, axis=1)
     df['five_p_same'] = df.apply(lambda x: x['five_p_diff'] if x['five_p_diff']*x['two_p_diff'] > 0 else np.NaN, axis=1)
-    df['three_p_same'] = df.apply(lambda x: x['three_p_diff'] if x['three_p_diff']*x['six_p_diff'] > 0 else np.NaN, axis=1)
-    df['six_p_same'] = df.apply(lambda x: x['six_p_diff'] if x['three_p_diff']*x['six_p_diff'] > 0 else np.NaN, axis=1)
+    #df['three_p_same'] = df.apply(lambda x: x['three_p_diff'] if x['three_p_diff']*x['six_p_diff'] > 0 else np.NaN, axis=1)
+    #df['six_p_same'] = df.apply(lambda x: x['six_p_diff'] if x['three_p_diff']*x['six_p_diff'] > 0 else np.NaN, axis=1)
 
     # SaME SAME
 
@@ -240,18 +211,18 @@ def merge_converter(filename):
 
     df['two_p_diff'] = df['two_p_same']
     df['five_p_diff'] = df['five_p_same']
-    df['three_p_diff'] = df['three_p_same']
-    df['six_p_diff'] = df['six_p_same']
+    #df['three_p_diff'] = df['three_p_same']
+    #df['six_p_diff'] = df['six_p_same']
 
     del df['two_p_same']
     del df['five_p_same']
-    del df['three_p_same']
-    del df['six_p_same']
+    #del df['three_p_same']
+    #del df['six_p_same']
     
     ## CHECK IF ALL FOUR COLUMNS HAVE DATA IN IT OTHERWISE ENTER NULL DATA
 
-    df.loc[df.three_p_diff.isnull(), ['two_p_diff','five_p_diff']] = np.NaN
-    df.loc[df.two_p_diff.isnull(), ['three_p_diff','six_p_diff']] = np.NaN
+    #df.loc[df.three_p_diff.isnull(), ['two_p_diff','five_p_diff']] = np.NaN
+    #df.loc[df.two_p_diff.isnull(), ['three_p_diff','six_p_diff']] = np.NaN
 
 
     #GET VALUE OF ABOVE ROW FOR TWO PERCENTAGE
@@ -259,86 +230,86 @@ def merge_converter(filename):
     index_of_not_null_two_p_diff = df[~df.two_p_diff.isnull()].index.tolist()
     print(index_of_not_null_two_p_diff)
 
-    sum_above_two_diff_pos = 0
-    sum_above_three_diff_pos = 0
-    sum_above_five_diff_pos = 0
-    sum_above_six_diff_pos = 0
+    #sum_above_two_diff_pos = 0
+    #sum_above_three_diff_pos = 0
+    #sum_above_five_diff_pos = 0
+    #sum_above_six_diff_pos = 0
 
-    sum_same_two_diff_pos = 0
-    sum_same_three_diff_pos = 0
-    sum_same_five_diff_pos = 0
-    sum_same_six_diff_pos = 0
+    #sum_same_two_diff_pos = 0
+    #sum_same_three_diff_pos = 0
+    #sum_same_five_diff_pos = 0
+    #sum_same_six_diff_pos = 0
 
-    sum_above_two_diff_neg = 0
-    sum_above_three_diff_neg = 0
-    sum_above_five_diff_neg = 0
-    sum_above_six_diff_neg = 0
+    #sum_above_two_diff_neg = 0
+    #sum_above_three_diff_neg = 0
+    #sum_above_five_diff_neg = 0
+    #sum_above_six_diff_neg = 0
 
-    sum_same_two_diff_neg = 0
-    sum_same_three_diff_neg = 0
-    sum_same_five_diff_neg = 0
-    sum_same_six_diff_neg = 0
-
-
-    for i in index_of_not_null_two_p_diff:
-        print(f"VALUE OF INDEX TWO DIFFERENCE FOR INDEX {i-1}:  ",df._get_value(i-1, 'two_percentage'))
-        print(f"VALUE OF INDEX TWO DIFFERENCE FOR INDEX {i}:  ",df._get_value(i, 'two_percentage'))
-        
-        if df._get_value(i, 'three_p_diff') > 0:
-
-            sum_above_two_diff_pos += df._get_value(i-1, 'two_percentage')
-            sum_above_three_diff_pos += df._get_value(i-1, 'three_percentage')
-            sum_above_five_diff_pos += df._get_value(i-1, 'five_percentage')
-            sum_above_six_diff_pos += df._get_value(i-1, 'six_percentage')
+    #sum_same_two_diff_neg = 0
+    #sum_same_three_diff_neg = 0
+    #sum_same_five_diff_neg = 0
+    #sum_same_six_diff_neg = 0
 
 
-            sum_same_two_diff_pos += df._get_value(i, 'two_percentage')
-            sum_same_three_diff_pos += df._get_value(i, 'three_percentage')
-            sum_same_five_diff_pos += df._get_value(i, 'five_percentage')
-            sum_same_six_diff_pos += df._get_value(i, 'six_percentage')
-        elif df._get_value(i, 'three_p_diff') < 0:
+    #for i in index_of_not_null_two_p_diff:
+    #    print(f"VALUE OF INDEX TWO DIFFERENCE FOR INDEX {i-1}:  ",df._get_value(i-1, 'two_percentage'))
+    #    print(f"VALUE OF INDEX TWO DIFFERENCE FOR INDEX {i}:  ",df._get_value(i, 'two_percentage'))
+    #    
+    #    if df._get_value(i, 'three_p_diff') > 0:
 
-            sum_above_two_diff_neg += df._get_value(i-1, 'two_percentage')
-            sum_above_three_diff_neg += df._get_value(i-1, 'three_percentage')
-            sum_above_five_diff_neg += df._get_value(i-1, 'five_percentage')
-            sum_above_six_diff_neg += df._get_value(i-1, 'six_percentage')
+#            sum_above_two_diff_pos += df._get_value(i-1, 'two_percentage')
+#            sum_above_three_diff_pos += df._get_value(i-1, 'three_percentage')
+#            sum_above_five_diff_pos += df._get_value(i-1, 'five_percentage')
+#            sum_above_six_diff_pos += df._get_value(i-1, 'six_percentage')
 
 
-            sum_same_two_diff_neg += df._get_value(i, 'two_percentage')
-            sum_same_three_diff_neg += df._get_value(i, 'three_percentage')
-            sum_same_five_diff_neg += df._get_value(i, 'five_percentage')
-            sum_same_six_diff_neg += df._get_value(i, 'six_percentage')
+#            sum_same_two_diff_pos += df._get_value(i, 'two_percentage')
+#            sum_same_three_diff_pos += df._get_value(i, 'three_percentage')
+#            sum_same_five_diff_pos += df._get_value(i, 'five_percentage')
+#            sum_same_six_diff_pos += df._get_value(i, 'six_percentage')
+#        elif df._get_value(i, 'three_p_diff') < 0:
+
+#            sum_above_two_diff_neg += df._get_value(i-1, 'two_percentage')
+#            sum_above_three_diff_neg += df._get_value(i-1, 'three_percentage')
+#            sum_above_five_diff_neg += df._get_value(i-1, 'five_percentage')
+#            sum_above_six_diff_neg += df._get_value(i-1, 'six_percentage')
+
+
+#            sum_same_two_diff_neg += df._get_value(i, 'two_percentage')
+#            sum_same_three_diff_neg += df._get_value(i, 'three_percentage')
+#            sum_same_five_diff_neg += df._get_value(i, 'five_percentage')
+#            sum_same_six_diff_neg += df._get_value(i, 'six_percentage')
 
 
     #POSITIVE
 
-    two_above_same_diff_pos = sum_same_two_diff_pos - sum_above_two_diff_pos
-    three_above_same_diff_pos = sum_same_three_diff_pos - sum_above_three_diff_pos
-    five_above_same_diff_pos = sum_same_five_diff_pos - sum_above_five_diff_pos
-    six_above_same_diff_pos = sum_same_six_diff_pos - sum_above_six_diff_pos
+#    two_above_same_diff_pos = sum_same_two_diff_pos - sum_above_two_diff_pos
+#    three_above_same_diff_pos = sum_same_three_diff_pos - sum_above_three_diff_pos
+#    five_above_same_diff_pos = sum_same_five_diff_pos - sum_above_five_diff_pos
+#    six_above_same_diff_pos = sum_same_six_diff_pos - sum_above_six_diff_pos
 
     total_rows = df.shape[0] - 3
     blank_list = [np.NaN]*(total_rows)
 
-    df['two_dif_sum_pos'] = [sum_above_two_diff_pos,sum_same_two_diff_pos,two_above_same_diff_pos]+blank_list
-    df['three_dif_sum_pos'] = [sum_above_three_diff_pos,sum_same_three_diff_pos,three_above_same_diff_pos]+blank_list
-    df['five_dif_sum_pos'] = [sum_above_five_diff_pos,sum_same_five_diff_pos,five_above_same_diff_pos]+blank_list
-    df['six_dif_sum_pos'] = [sum_above_six_diff_pos,sum_same_six_diff_pos,six_above_same_diff_pos]+blank_list
+ #   df['two_dif_sum_pos'] = [sum_above_two_diff_pos,sum_same_two_diff_pos,two_above_same_diff_pos]+blank_list
+ #   df['three_dif_sum_pos'] = [sum_above_three_diff_pos,sum_same_three_diff_pos,three_above_same_diff_pos]+blank_list
+ #   df['five_dif_sum_pos'] = [sum_above_five_diff_pos,sum_same_five_diff_pos,five_above_same_diff_pos]+blank_list
+ #   df['six_dif_sum_pos'] = [sum_above_six_diff_pos,sum_same_six_diff_pos,six_above_same_diff_pos]+blank_list
 
     #NEGATIVE
 
-    two_above_same_diff_neg = sum_same_two_diff_neg - sum_above_two_diff_neg
-    three_above_same_diff_neg = sum_same_three_diff_neg - sum_above_three_diff_neg
-    five_above_same_diff_neg = sum_same_five_diff_neg - sum_above_five_diff_neg
-    six_above_same_diff_neg = sum_same_six_diff_neg - sum_above_six_diff_neg
+ #   two_above_same_diff_neg = sum_same_two_diff_neg - sum_above_two_diff_neg
+ #   three_above_same_diff_neg = sum_same_three_diff_neg - sum_above_three_diff_neg
+ #   five_above_same_diff_neg = sum_same_five_diff_neg - sum_above_five_diff_neg
+ #   six_above_same_diff_neg = sum_same_six_diff_neg - sum_above_six_diff_neg
 
     #total_rows = df.shape[0] - 3
     #blank_list = [np.NaN]*(total_rows)
 
-    df['two_dif_sum_neg'] = [sum_above_two_diff_neg,sum_same_two_diff_neg,two_above_same_diff_neg]+blank_list
-    df['three_dif_sum_neg'] = [sum_above_three_diff_neg,sum_same_three_diff_neg,three_above_same_diff_neg]+blank_list
-    df['five_dif_sum_neg'] = [sum_above_five_diff_neg,sum_same_five_diff_neg,five_above_same_diff_neg]+blank_list
-    df['six_dif_sum_neg'] = [sum_above_six_diff_neg,sum_same_six_diff_neg,six_above_same_diff_neg]+blank_list
+ #   df['two_dif_sum_neg'] = [sum_above_two_diff_neg,sum_same_two_diff_neg,two_above_same_diff_neg]+blank_list
+ #   df['three_dif_sum_neg'] = [sum_above_three_diff_neg,sum_same_three_diff_neg,three_above_same_diff_neg]+blank_list
+ #   df['five_dif_sum_neg'] = [sum_above_five_diff_neg,sum_same_five_diff_neg,five_above_same_diff_neg]+blank_list
+ #   df['six_dif_sum_neg'] = [sum_above_six_diff_neg,sum_same_six_diff_neg,six_above_same_diff_neg]+blank_list
 
 
     #SHOW ROWS TWO THREE FIVE SIX ABOVE AND SAME
@@ -348,30 +319,69 @@ def merge_converter(filename):
     five_p_values = []
     six_p_values = []
 
+    two_p_v_d = []
+    three_p_v_d = []
+    five_p_v_d = []
+    six_p_v_d = []
+
+
     for j in index_of_not_null_two_p_diff:
         two_p_values.append('')
         two_p_values.append(df._get_value(j-1, 'two_percentage'))
         two_p_values.append(df._get_value(j, 'two_percentage'))
+        two_p_v_d.append(df._get_value(j, 'two_percentage') - df._get_value(j-1, 'two_percentage'))
 
         three_p_values.append('')
         three_p_values.append(df._get_value(j-1, 'three_percentage'))
-        three_p_values.append(df._get_value(j, 'three_percentage'))
+        three_p_values.append(df._get_value(j, 'three_percentage'))#
+        three_p_v_d.append(df._get_value(j, 'three_percentage'))
 
         five_p_values.append('')
         five_p_values.append(df._get_value(j-1, 'five_percentage'))
-        five_p_values.append(df._get_value(j, 'five_percentage'))
+        five_p_values.append(df._get_value(j, 'five_percentage'))#
+        five_p_v_d.append(df._get_value(j, 'five_percentage') - df._get_value(j-1, 'five_percentage'))
 
         six_p_values.append('')
         six_p_values.append(df._get_value(j-1, 'six_percentage'))
         six_p_values.append(df._get_value(j, 'six_percentage'))
+        six_p_v_d.append(df._get_value(j, 'six_percentage'))
     
-    
+ 
+    #df['two_p_values'] = two_p_values + another_blank_list*(total_rows_another - len(two_p_values))
+    #df['three_p_values'] = three_p_values + another_blank_list*(total_rows_another - len(three_p_values))
+    #df['five_p_values'] = five_p_values + another_blank_list*(total_rows_another - len(five_p_values))
+    #df['six_p_values'] = six_p_values + another_blank_list*(total_rows_another - len(six_p_values))
+
+    additional1 = pandas.DataFrame({'two_p_values': two_p_values})
+    additional2 = pandas.DataFrame({'three_p_values': three_p_values})
+    additional3 = pandas.DataFrame({'five_p_values': five_p_values})
+    additional4 = pandas.DataFrame({'six_p_values': six_p_values})
+
+    df = pandas.concat([df, additional1], axis=1)
+    df = pandas.concat([df, additional2], axis=1)
+    df = pandas.concat([df, additional3], axis=1)
+    df = pandas.concat([df, additional4], axis=1) 
+
     total_rows_another = df.shape[0]
     another_blank_list = [np.NaN]
-    df['two_p_values'] = two_p_values + another_blank_list*(total_rows_another - len(two_p_values))
-    df['three_p_values'] = three_p_values + another_blank_list*(total_rows_another - len(three_p_values))
-    df['five_p_values'] = five_p_values + another_blank_list*(total_rows_another - len(five_p_values))
-    df['six_p_values'] = six_p_values + another_blank_list*(total_rows_another - len(six_p_values))
+
+    
+    two_p_v_d = sorted(two_p_v_d)
+    three_p_v_d = sorted(three_p_v_d)
+    five_p_v_d = sorted(five_p_v_d)
+    six_p_v_d = sorted(six_p_v_d)
+    
+    two_p_v_d_pos = [ abs(x) for x in two_p_v_d]
+    three_p_v_d_pos = [abs(x) for x in three_p_v_d]
+    five_p_v_d_pos = [abs(x) for x in five_p_v_d]
+    six_p_v_d_pos = [abs(x) for x in six_p_v_d]
+
+    df['two_p_v_d'] = two_p_v_d_pos + another_blank_list*(total_rows_another - len(two_p_v_d))
+    df['three_p_v_d'] = three_p_v_d_pos + another_blank_list*(total_rows_another - len(three_p_v_d))
+    df['five_p_v_d'] = five_p_v_d_pos + another_blank_list*(total_rows_another - len(five_p_v_d))
+    df['six_p_v_d'] = six_p_v_d_pos + another_blank_list*(total_rows_another - len(six_p_v_d))
+
+    
 
 
 
@@ -457,13 +467,13 @@ except Exception as e:
     print(f"Combine_files error")
     print(str(e))
 
-if os.path.exists(path+"merge_sheet1_sheet2.xlsx"):
-    try:
+#if os.path.exists(path+"merge_sheet1_sheet2.xlsx"):
+ #   try:
         # pass
-        merge_converter(path+"merge_sheet1_sheet2.xlsx")
-    except Exception as e:
-        print(f"Merge Converter error")
-        print(str(e))
+merge_converter(path+"merge_sheet1_sheet2.xlsx")
+  #  except Exception as e:
+   #     print(f"Merge Converter error")
+    #    print(str(e))
 
 
 if os.path.exists(path+"temp_"+filenames[0]):
