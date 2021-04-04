@@ -6,6 +6,8 @@ from openpyxl import load_workbook
 import datetime
 from shutil import copyfile
 import numpy as np
+import operator
+import math
 
 if not os.path.exists("files"):
     os.mkdir("files")
@@ -20,7 +22,7 @@ path = join(dirname(realpath(__file__)), 'files/')
 
 
 def main(filename):
-    df = pandas.read_excel(filename, names=['one', 'two', 'three'])
+    df = pandas.read_excel(filename, names=['one', 'two', 'three'],header=None)
     writer1 = pandas.ExcelWriter(path+"temp_"+filename, engine='xlsxwriter')
     df.to_excel(writer1, sheet_name='Added_Blank_Space', index=False)
     writer1.save()
@@ -101,37 +103,20 @@ def round(a, b):
 
 
 def add_blank_rows_two(filename):
-    data = []
-    data2 = []
-    gap_rows = []
-    duplicate_index = []
-    workbook = load_workbook(filename=filename)
-    sheet = workbook['Sheet1']
-    for row in sheet.iter_rows(min_row=2, values_only=True):
-        data.append(row)
 
-    for i in range(0, len(data)-1):
-        a = data[i+1][0]
-        b = data[i][0]
-        diff = round(a, b)
-        print(data[i][0])
-        print(data[i+1][0])
-        print(diff, "   time delta   ", datetime.timedelta(seconds=1.5))
+    df = pandas.read_excel(filename)
+    df['difference'] = df.one.diff(1)
 
-        data2.append(list(data[i]))
-        if diff > 1:
-            data2.append(list(("", "", "")))
-        elif diff == 0:
-            duplicate_index.append(i)
-            duplicate_index.append(i+1)
-    for line in data2:
-        # print(line)
-        pass
-    print(duplicate_index)
-    for j in duplicate_index:
-        del data2[j]
-    df = pandas.DataFrame(
-        data2, columns=['one', 'two', 'three', "blank", "four", "five", "six"])
+    list = df.values.tolist()
+    list2 = []
+    for i in list:
+        if i[7] > datetime.timedelta(seconds=1):
+            list2.append(["", "", "","","","",""])
+            list2.append([i[0], i[1], i[2],i[3], i[4], i[5],i[6]])
+        else:
+            list2.append([i[0], i[1], i[2],i[3], i[4], i[5],i[6]])
+
+    df = pandas.DataFrame(list2, columns=['one', 'two', 'three', "blank", "four", "five", "six"])
     writer = pandas.ExcelWriter(path+filename, engine='xlsxwriter')
     df.to_excel(writer, sheet_name='Added_Blank_Space', index=False)
     writer.save()
@@ -163,11 +148,11 @@ def combine_files(filename1, filename2):
     #s1['six'] = s1['one']
     #s1['one'] = pandas.to_datetime(s1['one'])
     writer = pandas.ExcelWriter(
-        path+"merge_sheet1_sheet2.xlsx", engine='xlsxwriter')
+        "merge_sheet1_sheet2.xlsx", engine='xlsxwriter')
     s1.to_excel(writer, sheet_name='Sheet1', index=False)
     writer.save()
     print(s1)
-    #add_blank_rows_two("merge_sheet1_sheet2.xlsx")
+    add_blank_rows_two("merge_sheet1_sheet2.xlsx")
 
 
 def merge_converter(filename):
@@ -176,140 +161,53 @@ def merge_converter(filename):
     #df.loc['Total'] = pandas.Series(df.sum())
     df.insert(7, 'seven', '')
     # PERCENTAGE CALCULATIONS
-    df['two_percentage'] = df['two_x'].apply(lambda a: (a/df['two_x'].sum())*100)
-    df['five_percentage'] = df['two_y'].apply(
-        lambda a: (a/df['two_y'].sum())*100)
-    df['three_percentage'] = df['three_x'].apply(
-        lambda a: (a/df['three_x'].sum())*100)
+    df['two_percentage'] = df['two'].apply(lambda a: (a/df['two'].sum())*100)
+    df['five_percentage'] = df['five'].apply(
+        lambda a: (a/df['five'].sum())*100)
+    df['three_percentage'] = df['three'].apply(
+        lambda a: (a/df['three'].sum())*100)
     
-    df['six_percentage'] = df['three_y'].apply(lambda a: (a/df['three_y'].sum())*100)
+    df['six_percentage'] = df['six'].apply(lambda a: (a/df['six'].sum())*100)
 
-    # PERCENTAGE CALCULATED
+    df.insert(12, 'twelve', '')
 
-    #df['sum_two_three_percent'] = df.apply(lambda row: row.two_percentage + row.three_percentage, axis=1)
-    #df['sum_five_six_percent'] = df.apply(lambda row: row.five_percentage + row.six_percentage, axis=1)
-    # Y or AB ka difference lena hai means b and f ka percentage means two and five ka diff
+
     # DIFFERENCE
 
     df['two_p_diff'] = df.two_percentage.diff()
     df['five_p_diff'] = df.five_percentage.diff()
-    #df['three_p_diff'] = df.three_percentage.diff()
-    #df['six_p_diff'] = df.six_percentage.diff()
-
+    
+    df.insert(15, 'fifteen', '')
     # DIFFERENCE ENDS
 
     # SAME SAME
 
     df['two_p_same'] = df.apply(lambda x: x['two_p_diff'] if x['two_p_diff']*x['five_p_diff'] > 0 else np.NaN, axis=1)
     df['five_p_same'] = df.apply(lambda x: x['five_p_diff'] if x['five_p_diff']*x['two_p_diff'] > 0 else np.NaN, axis=1)
-    #df['three_p_same'] = df.apply(lambda x: x['three_p_diff'] if x['three_p_diff']*x['six_p_diff'] > 0 else np.NaN, axis=1)
-    #df['six_p_same'] = df.apply(lambda x: x['six_p_diff'] if x['three_p_diff']*x['six_p_diff'] > 0 else np.NaN, axis=1)
-
-    # SaME SAME
+    
 
     #Changing p_diff to p_same and deleting  same
 
     df['two_p_diff'] = df['two_p_same']
     df['five_p_diff'] = df['five_p_same']
-    #df['three_p_diff'] = df['three_p_same']
-    #df['six_p_diff'] = df['six_p_same']
+   
 
     del df['two_p_same']
     del df['five_p_same']
-    #del df['three_p_same']
-    #del df['six_p_same']
+   
     
     ## CHECK IF ALL FOUR COLUMNS HAVE DATA IN IT OTHERWISE ENTER NULL DATA
-
-    #df.loc[df.three_p_diff.isnull(), ['two_p_diff','five_p_diff']] = np.NaN
-    #df.loc[df.two_p_diff.isnull(), ['three_p_diff','six_p_diff']] = np.NaN
-
 
     #GET VALUE OF ABOVE ROW FOR TWO PERCENTAGE
 
     index_of_not_null_two_p_diff = df[~df.two_p_diff.isnull()].index.tolist()
     print(index_of_not_null_two_p_diff)
 
-    #sum_above_two_diff_pos = 0
-    #sum_above_three_diff_pos = 0
-    #sum_above_five_diff_pos = 0
-    #sum_above_six_diff_pos = 0
-
-    #sum_same_two_diff_pos = 0
-    #sum_same_three_diff_pos = 0
-    #sum_same_five_diff_pos = 0
-    #sum_same_six_diff_pos = 0
-
-    #sum_above_two_diff_neg = 0
-    #sum_above_three_diff_neg = 0
-    #sum_above_five_diff_neg = 0
-    #sum_above_six_diff_neg = 0
-
-    #sum_same_two_diff_neg = 0
-    #sum_same_three_diff_neg = 0
-    #sum_same_five_diff_neg = 0
-    #sum_same_six_diff_neg = 0
-
-
-    #for i in index_of_not_null_two_p_diff:
-    #    print(f"VALUE OF INDEX TWO DIFFERENCE FOR INDEX {i-1}:  ",df._get_value(i-1, 'two_percentage'))
-    #    print(f"VALUE OF INDEX TWO DIFFERENCE FOR INDEX {i}:  ",df._get_value(i, 'two_percentage'))
-    #    
-    #    if df._get_value(i, 'three_p_diff') > 0:
-
-#            sum_above_two_diff_pos += df._get_value(i-1, 'two_percentage')
-#            sum_above_three_diff_pos += df._get_value(i-1, 'three_percentage')
-#            sum_above_five_diff_pos += df._get_value(i-1, 'five_percentage')
-#            sum_above_six_diff_pos += df._get_value(i-1, 'six_percentage')
-
-
-#            sum_same_two_diff_pos += df._get_value(i, 'two_percentage')
-#            sum_same_three_diff_pos += df._get_value(i, 'three_percentage')
-#            sum_same_five_diff_pos += df._get_value(i, 'five_percentage')
-#            sum_same_six_diff_pos += df._get_value(i, 'six_percentage')
-#        elif df._get_value(i, 'three_p_diff') < 0:
-
-#            sum_above_two_diff_neg += df._get_value(i-1, 'two_percentage')
-#            sum_above_three_diff_neg += df._get_value(i-1, 'three_percentage')
-#            sum_above_five_diff_neg += df._get_value(i-1, 'five_percentage')
-#            sum_above_six_diff_neg += df._get_value(i-1, 'six_percentage')
-
-
-#            sum_same_two_diff_neg += df._get_value(i, 'two_percentage')
-#            sum_same_three_diff_neg += df._get_value(i, 'three_percentage')
-#            sum_same_five_diff_neg += df._get_value(i, 'five_percentage')
-#            sum_same_six_diff_neg += df._get_value(i, 'six_percentage')
-
-
-    #POSITIVE
-
-#    two_above_same_diff_pos = sum_same_two_diff_pos - sum_above_two_diff_pos
-#    three_above_same_diff_pos = sum_same_three_diff_pos - sum_above_three_diff_pos
-#    five_above_same_diff_pos = sum_same_five_diff_pos - sum_above_five_diff_pos
-#    six_above_same_diff_pos = sum_same_six_diff_pos - sum_above_six_diff_pos
+  
 
     total_rows = df.shape[0] - 3
     blank_list = [np.NaN]*(total_rows)
 
- #   df['two_dif_sum_pos'] = [sum_above_two_diff_pos,sum_same_two_diff_pos,two_above_same_diff_pos]+blank_list
- #   df['three_dif_sum_pos'] = [sum_above_three_diff_pos,sum_same_three_diff_pos,three_above_same_diff_pos]+blank_list
- #   df['five_dif_sum_pos'] = [sum_above_five_diff_pos,sum_same_five_diff_pos,five_above_same_diff_pos]+blank_list
- #   df['six_dif_sum_pos'] = [sum_above_six_diff_pos,sum_same_six_diff_pos,six_above_same_diff_pos]+blank_list
-
-    #NEGATIVE
-
- #   two_above_same_diff_neg = sum_same_two_diff_neg - sum_above_two_diff_neg
- #   three_above_same_diff_neg = sum_same_three_diff_neg - sum_above_three_diff_neg
- #   five_above_same_diff_neg = sum_same_five_diff_neg - sum_above_five_diff_neg
- #   six_above_same_diff_neg = sum_same_six_diff_neg - sum_above_six_diff_neg
-
-    #total_rows = df.shape[0] - 3
-    #blank_list = [np.NaN]*(total_rows)
-
- #   df['two_dif_sum_neg'] = [sum_above_two_diff_neg,sum_same_two_diff_neg,two_above_same_diff_neg]+blank_list
- #   df['three_dif_sum_neg'] = [sum_above_three_diff_neg,sum_same_three_diff_neg,three_above_same_diff_neg]+blank_list
- #   df['five_dif_sum_neg'] = [sum_above_five_diff_neg,sum_same_five_diff_neg,five_above_same_diff_neg]+blank_list
- #   df['six_dif_sum_neg'] = [sum_above_six_diff_neg,sum_same_six_diff_neg,six_above_same_diff_neg]+blank_list
 
 
     #SHOW ROWS TWO THREE FIVE SIX ABOVE AND SAME
@@ -362,75 +260,206 @@ def merge_converter(filename):
     df = pandas.concat([df, additional3], axis=1)
     df = pandas.concat([df, additional4], axis=1) 
 
+    df.insert(20, 'twenty', '')
+
     total_rows_another = df.shape[0]
     another_blank_list = [np.NaN]
 
     
-    two_p_v_d = sorted(two_p_v_d)
-    three_p_v_d = sorted(three_p_v_d)
-    five_p_v_d = sorted(five_p_v_d)
-    six_p_v_d = sorted(six_p_v_d)
+    #two_p_v_d = sorted(two_p_v_d)
+    #three_p_v_d = sorted(three_p_v_d)
+    #five_p_v_d = sorted(five_p_v_d)
+    #six_p_v_d = sorted(six_p_v_d)
+
+    two_p_v_d_neg = [abs(x) for x in two_p_v_d if x < 0]
+    three_p_v_d_neg = []
     
-    two_p_v_d_pos = [ abs(x) for x in two_p_v_d]
-    three_p_v_d_pos = [abs(x) for x in three_p_v_d]
-    five_p_v_d_pos = [abs(x) for x in five_p_v_d]
-    six_p_v_d_pos = [abs(x) for x in six_p_v_d]
-
-    df['two_p_v_d'] = two_p_v_d_pos + another_blank_list*(total_rows_another - len(two_p_v_d))
-    df['three_p_v_d'] = three_p_v_d_pos + another_blank_list*(total_rows_another - len(three_p_v_d))
-    df['five_p_v_d'] = five_p_v_d_pos + another_blank_list*(total_rows_another - len(five_p_v_d))
-    df['six_p_v_d'] = six_p_v_d_pos + another_blank_list*(total_rows_another - len(six_p_v_d))
+    
+    for ind in range(0,len(two_p_v_d_neg)):
+        three_p_v_d_neg.append(three_p_v_d[ind])
+        #del three_p_v_d[0]
+    
+    
+    five_p_v_d_neg = [abs(x) for x in five_p_v_d if x < 0]
+    six_p_v_d_neg = []
+    
+    for ind in range(0,len(five_p_v_d_neg)):
+        six_p_v_d_neg.append(six_p_v_d[ind])
+        #del six_p_v_d[0]
 
     
+    two_p_v_d_pos = [x for x in two_p_v_d if x > 0]
+    three_p_v_d_pos = []
+
+    for indi in range(len(two_p_v_d_neg),len(two_p_v_d)):
+        three_p_v_d_pos.append(three_p_v_d[ind])
 
 
 
-    #df.loc[df['two_p_diff'] != "", 'above_two_p'] = df["two_percentage"].shift(-1)
-    #df['above_two_p_test'] = df.loc[df['two_p_diff'] != np.NaN, 'A'.shift(-1)]
+    five_p_v_d_pos = [x for x in five_p_v_d if x > 0]
+    six_p_v_d_pos = []
 
-    #df['above_two_p'] = df.apply(lambda x: df['two_percentage'].shift(1) if ~df['two_p_diff'].isin(['']) else np.NaN,axis=1)
+    for indi in range(len(five_p_v_d_neg),len(five_p_v_d)):
+        six_p_v_d_pos.append(six_p_v_d[ind])
+
+    
+    print("####################")
+    print(f"length of two_p_v_d {len(two_p_v_d)}")
+    print(f"length of two_p_v_d_pos {len(two_p_v_d_pos)}")
+    print(f"length of two_p_v_d_neg {len(two_p_v_d_neg)}")
+    print("####################")
+
+    print("####################")
+    print(f"length of three_p_v_d {len(three_p_v_d)}")
+    print(f"length of three_p_v_d_pos {len(three_p_v_d_pos)}")
+    print(f"length of three_p_v_d_neg {len(three_p_v_d_neg)}")
+    print("####################")
+
+    print("####################")
+    print(f"length of five_p_v_d {len(five_p_v_d)}")
+    print(f"length of five_p_v_d_pos {len(five_p_v_d_pos)}")
+    print(f"length of five_p_v_d_neg {len(five_p_v_d_neg)}")
+    print("####################")
+
+    print("####################")
+    print(f"length of six_p_v_d {len(six_p_v_d)}")
+    print(f"length of six_p_v_d_pos {len(six_p_v_d_pos)}")
+    print(f"length of six   _p_v_d_neg {len(six_p_v_d_neg)}")
+    print("####################")
+
+    minus_two_three_neg = list(map(operator.sub, two_p_v_d_neg, three_p_v_d_neg))
+    minus_two_three_pos = list(map(operator.sub, two_p_v_d_pos, three_p_v_d_pos))
+
+    minus_five_six_neg = list(map(operator.sub, five_p_v_d_neg, six_p_v_d_neg))
+    minus_five_six_pos = list(map(operator.sub, five_p_v_d_pos, six_p_v_d_pos))
+
+    df['two_p_v_d'] = two_p_v_d + another_blank_list*(total_rows_another - len(two_p_v_d))
+    df['three_p_v_d'] = three_p_v_d + another_blank_list*(total_rows_another - len(three_p_v_d))
+    df['five_p_v_d'] = five_p_v_d + another_blank_list*(total_rows_another - len(five_p_v_d))
+    df['six_p_v_d'] = six_p_v_d + another_blank_list*(total_rows_another - len(six_p_v_d))
+
+    df.insert(25, 'twenty_fifth', '')
+
+    df['two_p_v_d_abs'] = df['two_p_v_d'].abs()
+    df['three_p_v_d_abs'] = df['three_p_v_d'].abs()
+    df['five_p_v_d_abs'] = df['five_p_v_d'].abs()
+    df['six_p_v_d_abs'] = df['six_p_v_d'].abs()
+
+    df.insert(30, 'thirty', '')
+
+    df['2-3abs'] = df['two_p_v_d_abs'] - df['three_p_v_d_abs']
+    df['5-6abs'] = df['five_p_v_d_abs'] - df['six_p_v_d_abs']
+
+    df['2-3abs'] = df['2-3abs'].abs()
+    df['5-6abs'] = df['5-6abs'].abs()
 
 
+    df.insert(33, '33', '')
+    two_p_v_d_pos_list = df.apply(lambda x :x['two_p_v_d'] if x['two_p_v_d'] > 0 else np.NaN ,axis = 1).values.tolist()
+    two_p_v_d_pos_list = [x for x in two_p_v_d_pos_list if math.isnan(x) == False]
+    df['two_p_v_d_pos'] = two_p_v_d_pos_list + another_blank_list*(total_rows_another - len(two_p_v_d_pos_list))
 
-    # CONVERTING SAME SAME TO POSITIVE
+    three_p_v_d_pos_list = df.apply(lambda x :x['three_p_v_d'] if x['two_p_v_d'] > 0 else np.NaN ,axis = 1).values.tolist()
+    three_p_v_d_pos_list = [x for x in three_p_v_d_pos_list if math.isnan(x) == False]
+    df['three_p_v_d_pos'] = three_p_v_d_pos_list + another_blank_list*(total_rows_another - len(three_p_v_d_pos_list))
 
-    #df['sum_two_three_difference_positive'] = df['sum_two_three_difference_a'].apply(lambda x : abs(x) if x != "" else np.NaN )
-    #df['sum_five_six_difference_positive'] = df['sum_five_six_difference_a'].apply(lambda x : abs(x) if x != "" else np.NaN )
+    five_p_v_d_pos_list = df.apply(lambda x :x['five_p_v_d'] if x['five_p_v_d'] > 0 else np.NaN ,axis = 1).values.tolist()
+    five_p_v_d_pos_list = [x for x in five_p_v_d_pos_list if math.isnan(x) == False]
+    df['five_p_v_d_pos'] = five_p_v_d_pos_list + another_blank_list*(total_rows_another - len(five_p_v_d_pos_list))
+    
+    six_p_v_d_pos_list = df.apply(lambda x :x['six_p_v_d'] if x['five_p_v_d'] > 0 else np.NaN ,axis = 1).values.tolist()
+    six_p_v_d_pos_list = [x for x in six_p_v_d_pos_list if math.isnan(x) == False]
+    df['six_p_v_d_pos'] = six_p_v_d_pos_list + another_blank_list*(total_rows_another - len(six_p_v_d_pos_list))
 
-    #df['sum_two_three_difference_a'] = df['sum_two_three_difference_positive']
-    #df['sum_five_six_difference_a'] = df['sum_five_six_difference_positive']
+    df.insert(38, '38', '')
+    two_p_v_d_neg_list = df.apply(lambda x :x['two_p_v_d'] if x['two_p_v_d'] < 0 else np.NaN ,axis = 1).values.tolist()
+    two_p_v_d_neg_list = [x for x in two_p_v_d_neg_list if math.isnan(x) == False]
+    df['two_p_v_d_neg'] = two_p_v_d_neg_list + another_blank_list*(total_rows_another - len(two_p_v_d_neg_list))
+    
+    three_p_v_d_neg_list = df.apply(lambda x :x['three_p_v_d'] if x['two_p_v_d'] < 0 else np.NaN ,axis = 1).values.tolist()
+    three_p_v_d_neg_list = [x for x in three_p_v_d_neg_list if math.isnan(x) == False]
+    df['three_p_v_d_neg'] = three_p_v_d_neg_list + another_blank_list*(total_rows_another - len(three_p_v_d_neg_list))
 
-    #del df['sum_two_three_difference_positive']
-    #del df['sum_five_six_difference_positive']
-    #print(df['sum_two_three_difference_a'])
-    #print(df['sum_five_six_difference_a'])
-    try:
-        pass
+    five_p_v_d_neg_list = df.apply(lambda x :x['five_p_v_d'] if x['five_p_v_d'] < 0 else np.NaN ,axis = 1).values.tolist()
+    five_p_v_d_neg_list = [x for x in five_p_v_d_neg_list if math.isnan(x) == False]
+    df['five_p_v_d_neg'] = five_p_v_d_neg_list + another_blank_list*(total_rows_another - len(five_p_v_d_neg_list))
 
-        #sum_two_percentage_difference_a = df['sum_two_three_difference_a'].sum()
-        #sum_five_percentage_difference_a = df['sum_five_six_difference_a'].sum()
+    six_p_v_d_neg_list = df.apply(lambda x :x['six_p_v_d'] if x['five_p_v_d'] < 0 else np.NaN ,axis = 1).values.tolist()
+    six_p_v_d_neg_list = [x for x in six_p_v_d_neg_list if math.isnan(x) == False]
+    df['six_p_v_d_neg'] = six_p_v_d_neg_list + another_blank_list*(total_rows_another - len(six_p_v_d_neg_list))
+    
+    df['two_p_v_d_neg'] = df['two_p_v_d_neg'].abs()
+    df['three_p_v_d_neg'] = df['three_p_v_d_neg'].abs()
+    df['five_p_v_d_neg'] = df['five_p_v_d_neg'].abs()
+    df['six_p_v_d_neg'] = df['six_p_v_d_neg'].abs()
 
-        #percent_sum_two_percentage_difference_a = (sum_two_percentage_difference_a/(sum_two_percentage_difference_a+sum_five_percentage_difference_a))*100
-        #percent_sum_five_percentage_difference_a = (sum_five_percentage_difference_a/(sum_two_percentage_difference_a+sum_five_percentage_difference_a))*100
+    df.insert(43, '43', '')
 
-        #s1 = pandas.Series(data = {0:sum_two_percentage_difference_a,2:percent_sum_two_percentage_difference_a})
-        #s2 = pandas.Series(data = {0:sum_five_percentage_difference_a,2:percent_sum_five_percentage_difference_a})
-        #df['pec_two'] = s1
-        #df['pec_five'] = s2
-        #print("##################################")
-        ##print("##################################")
-        #print("##################################")
-        #print("##################################")
-        # print(s1)
-        # print(s2)
-        # print([sum_five_percentage_difference_a,percent_sum_five_percentage_difference_a])
-        #print("##################################")
-        #print("##################################")
-        #print("##################################")
-        #print("##################################")
+    df['2-3pos'] = df['two_p_v_d_pos'] - df['three_p_v_d_pos']
+    df['5-6pos'] = df['five_p_v_d_pos'] - df['six_p_v_d_pos']
 
-    except Exception as e:
-        print(str(e))
+    df['2-3pos'] = df['2-3pos'].abs()
+    df['5-6pos'] = df['5-6pos'].abs()
+    df.insert(46, '46', '')
+
+    df['2-3neg'] = df['two_p_v_d_neg'] - df['three_p_v_d_neg']
+    df['5-6neg'] = df['five_p_v_d_neg'] - df['six_p_v_d_neg']
+
+    df['2-3neg'] = df['2-3neg'].abs()
+    df['5-6neg'] = df['5-6neg'].abs()
+
+    #CHOTA WALA RAKHNA HAI BADA WALA HATANA HAI
+    df.insert(49, '49', '')
+
+    df['2-3pos_a'] = df.apply(lambda x : x['2-3pos'] if x['2-3pos'] < x['5-6pos'] else np.NaN, axis = 1)
+    df['5-6pos_a'] = df.apply(lambda x : x['5-6pos'] if x['5-6pos'] < x['2-3pos'] else np.NaN, axis = 1)
+
+    df['2-3neg_a'] = df.apply(lambda x : x['2-3neg'] if x['2-3neg'] < x['5-6neg'] else np.NaN, axis = 1)
+    df['5-6neg_a'] = df.apply(lambda x : x['5-6neg'] if x['5-6neg'] < x['2-3neg'] else np.NaN, axis = 1)
+
+    av_23_pos_a = df['2-3pos_a'].mean()
+    av_56_pos_a = df['5-6pos_a'].mean()
+
+    av_23_neg_a = df['2-3neg_a'].mean()
+    av_56_neg_a = df['5-6neg_a'].mean()
+
+    av_23_pos_a_percent = av_23_pos_a*100/(av_23_pos_a + av_23_neg_a)
+    av_23_neg_a_percent = av_23_neg_a*100/(av_23_pos_a + av_23_neg_a)
+    
+    av_56_pos_a_percent = av_56_pos_a*100/(av_56_pos_a+av_56_neg_a)
+    av_56_neg_a_percent = av_56_neg_a*100/(av_56_pos_a+av_56_neg_a)
+
+    a = df['2-3pos_a'].values.tolist()
+    a = [x for x in a if math.isnan(x) == False]
+    a.append(av_23_pos_a)
+    a.append(av_23_pos_a_percent)
+
+
+    b = df['5-6pos_a'].values.tolist()
+    b = [x for x in b if math.isnan(x) == False]
+    b.append(av_56_pos_a)
+    b.append(av_56_pos_a_percent)
+
+    c = df['2-3neg_a'].values.tolist()
+    c = [x for x in c if math.isnan(x) == False]
+    c.append(av_23_neg_a)
+    c.append(av_23_neg_a_percent)
+
+    d = df['5-6neg_a'].values.tolist()
+    d = [x for x in d if math.isnan(x) == False]
+    d.append(av_56_neg_a)
+    d.append(av_56_neg_a_percent)
+    total_rows_another = df.shape[0]
+
+    print(f'length of a {len(a)}')
+    print(f'total rows {total_rows_another}')
+    print(f'remainder {total_rows_another - len(a)}')
+    df['2-3pos_a'] = a + another_blank_list*(total_rows_another - len(a))
+    df['5-6pos_a'] = b + another_blank_list*(total_rows_another - len(b))
+    df['2-3neg_a'] = c + another_blank_list*(total_rows_another - len(c))
+    df['5-6neg_a'] = d + another_blank_list*(total_rows_another - len(d))
+
+
 
     writer = pandas.ExcelWriter(path+"merge_converter.xlsx", engine='xlsxwriter')
     df.to_excel(writer, sheet_name='Sheet1', index=False)
@@ -468,12 +497,11 @@ except Exception as e:
     print(str(e))
 
 #if os.path.exists(path+"merge_sheet1_sheet2.xlsx"):
- #   try:
-        # pass
+#    try:
 merge_converter(path+"merge_sheet1_sheet2.xlsx")
-  #  except Exception as e:
-   #     print(f"Merge Converter error")
-    #    print(str(e))
+#    except Exception as e:
+#        print(f"Merge Converter error")
+#        print(str(e))
 
 
 if os.path.exists(path+"temp_"+filenames[0]):
