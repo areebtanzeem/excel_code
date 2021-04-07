@@ -106,11 +106,13 @@ def add_blank_rows_two(filename):
 
     df = pandas.read_excel(filename)
     df['difference'] = df.one.diff(1)
+    print("DIFFERENCE COLUMN")
+    print(df['difference'])
 
     list = df.values.tolist()
     list2 = []
     for i in list:
-        if i[7] > datetime.timedelta(seconds=1):
+        if i[7] > datetime.timedelta(seconds=1.5):
             list2.append(["", "", "","","","",""])
             list2.append([i[0], i[1], i[2],i[3], i[4], i[5],i[6]])
         else:
@@ -151,6 +153,7 @@ def combine_files(filename1, filename2):
         "merge_sheet1_sheet2.xlsx", engine='xlsxwriter')
     s1.to_excel(writer, sheet_name='Sheet1', index=False)
     writer.save()
+    print("merged s1")
     print(s1)
     add_blank_rows_two("merge_sheet1_sheet2.xlsx")
 
@@ -333,131 +336,276 @@ def merge_converter(filename):
     minus_five_six_neg = list(map(operator.sub, five_p_v_d_neg, six_p_v_d_neg))
     minus_five_six_pos = list(map(operator.sub, five_p_v_d_pos, six_p_v_d_pos))
 
-    df['two_p_v_d'] = two_p_v_d + another_blank_list*(total_rows_another - len(two_p_v_d))
-    df['three_p_v_d'] = three_p_v_d + another_blank_list*(total_rows_another - len(three_p_v_d))
-    df['five_p_v_d'] = five_p_v_d + another_blank_list*(total_rows_another - len(five_p_v_d))
-    df['six_p_v_d'] = six_p_v_d + another_blank_list*(total_rows_another - len(six_p_v_d))
+    df_sort = pandas.DataFrame()
 
-    df.insert(25, 'twenty_fifth', '')
+    df_sort['two_p_v_d'] = two_p_v_d + another_blank_list*(total_rows_another - len(two_p_v_d))
+    df_sort['three_p_v_d'] = three_p_v_d + another_blank_list*(total_rows_another - len(three_p_v_d))
+    df_sort['five_p_v_d'] = five_p_v_d + another_blank_list*(total_rows_another - len(five_p_v_d))
+    df_sort['six_p_v_d'] = six_p_v_d + another_blank_list*(total_rows_another - len(six_p_v_d))
+   
+    df['two_p_v_d'] = df_sort['two_p_v_d']
+    df['three_p_v_d'] = df_sort['three_p_v_d']
+    df['five_p_v_d'] = df_sort['five_p_v_d']
+    df['six_p_v_d'] = df_sort['six_p_v_d']
 
-    df['two_p_v_d_abs'] = df['two_p_v_d'].abs()
-    df['three_p_v_d_abs'] = df['three_p_v_d'].abs()
-    df['five_p_v_d_abs'] = df['five_p_v_d'].abs()
-    df['six_p_v_d_abs'] = df['six_p_v_d'].abs()
-
-    df.insert(30, 'thirty', '')
-
-    df['2-3abs'] = df['two_p_v_d_abs'] - df['three_p_v_d_abs']
-    df['5-6abs'] = df['five_p_v_d_abs'] - df['six_p_v_d_abs']
-
-    df['2-3abs'] = df['2-3abs'].abs()
-    df['5-6abs'] = df['5-6abs'].abs()
-
-
-    df.insert(33, '33', '')
-    two_p_v_d_pos_list = df.apply(lambda x :x['two_p_v_d'] if x['two_p_v_d'] > 0 else np.NaN ,axis = 1).values.tolist()
-    two_p_v_d_pos_list = [x for x in two_p_v_d_pos_list if math.isnan(x) == False]
-    df['two_p_v_d_pos'] = two_p_v_d_pos_list + another_blank_list*(total_rows_another - len(two_p_v_d_pos_list))
-
-    three_p_v_d_pos_list = df.apply(lambda x :x['three_p_v_d'] if x['two_p_v_d'] > 0 else np.NaN ,axis = 1).values.tolist()
-    three_p_v_d_pos_list = [x for x in three_p_v_d_pos_list if math.isnan(x) == False]
-    df['three_p_v_d_pos'] = three_p_v_d_pos_list + another_blank_list*(total_rows_another - len(three_p_v_d_pos_list))
-
-    five_p_v_d_pos_list = df.apply(lambda x :x['five_p_v_d'] if x['five_p_v_d'] > 0 else np.NaN ,axis = 1).values.tolist()
-    five_p_v_d_pos_list = [x for x in five_p_v_d_pos_list if math.isnan(x) == False]
-    df['five_p_v_d_pos'] = five_p_v_d_pos_list + another_blank_list*(total_rows_another - len(five_p_v_d_pos_list))
     
-    six_p_v_d_pos_list = df.apply(lambda x :x['six_p_v_d'] if x['five_p_v_d'] > 0 else np.NaN ,axis = 1).values.tolist()
-    six_p_v_d_pos_list = [x for x in six_p_v_d_pos_list if math.isnan(x) == False]
-    df['six_p_v_d_pos'] = six_p_v_d_pos_list + another_blank_list*(total_rows_another - len(six_p_v_d_pos_list))
+    df['two_p_v_d_neg'] = df.apply(lambda x : x['two_p_v_d'] if x['two_p_v_d']<0 else np.NaN , axis=1)
+    df['three_p_v_d_neg'] = df.apply(lambda x : x['three_p_v_d'] if x['two_p_v_d']<0 else np.NaN , axis=1)
+    df['five_p_v_d_neg'] = df.apply(lambda x : x['five_p_v_d'] if x['two_p_v_d']<0 else np.NaN , axis=1)
+    df['six_p_v_d_neg'] = df.apply(lambda x : x['six_p_v_d'] if x['two_p_v_d']<0 else np.NaN , axis=1)
 
-    df.insert(38, '38', '')
-    two_p_v_d_neg_list = df.apply(lambda x :x['two_p_v_d'] if x['two_p_v_d'] < 0 else np.NaN ,axis = 1).values.tolist()
-    two_p_v_d_neg_list = [x for x in two_p_v_d_neg_list if math.isnan(x) == False]
-    df['two_p_v_d_neg'] = two_p_v_d_neg_list + another_blank_list*(total_rows_another - len(two_p_v_d_neg_list))
-    
-    three_p_v_d_neg_list = df.apply(lambda x :x['three_p_v_d'] if x['two_p_v_d'] < 0 else np.NaN ,axis = 1).values.tolist()
-    three_p_v_d_neg_list = [x for x in three_p_v_d_neg_list if math.isnan(x) == False]
-    df['three_p_v_d_neg'] = three_p_v_d_neg_list + another_blank_list*(total_rows_another - len(three_p_v_d_neg_list))
-
-    five_p_v_d_neg_list = df.apply(lambda x :x['five_p_v_d'] if x['five_p_v_d'] < 0 else np.NaN ,axis = 1).values.tolist()
-    five_p_v_d_neg_list = [x for x in five_p_v_d_neg_list if math.isnan(x) == False]
-    df['five_p_v_d_neg'] = five_p_v_d_neg_list + another_blank_list*(total_rows_another - len(five_p_v_d_neg_list))
-
-    six_p_v_d_neg_list = df.apply(lambda x :x['six_p_v_d'] if x['five_p_v_d'] < 0 else np.NaN ,axis = 1).values.tolist()
-    six_p_v_d_neg_list = [x for x in six_p_v_d_neg_list if math.isnan(x) == False]
-    df['six_p_v_d_neg'] = six_p_v_d_neg_list + another_blank_list*(total_rows_another - len(six_p_v_d_neg_list))
-    
     df['two_p_v_d_neg'] = df['two_p_v_d_neg'].abs()
     df['three_p_v_d_neg'] = df['three_p_v_d_neg'].abs()
     df['five_p_v_d_neg'] = df['five_p_v_d_neg'].abs()
     df['six_p_v_d_neg'] = df['six_p_v_d_neg'].abs()
 
-    df.insert(43, '43', '')
+    df_sort['two_p_v_d_pos'] = df.apply(lambda x : x['two_p_v_d'] if x['two_p_v_d']>0 else np.NaN , axis=1)
+    df_sort['three_p_v_d_pos'] = df.apply(lambda x : x['three_p_v_d'] if x['two_p_v_d']>0 else np.NaN , axis=1)
+    df_sort['five_p_v_d_pos'] = df.apply(lambda x : x['five_p_v_d'] if x['two_p_v_d']>0 else np.NaN , axis=1)
+    df_sort['six_p_v_d_pos'] = df.apply(lambda x : x['six_p_v_d'] if x['two_p_v_d']>0 else np.NaN , axis=1)
 
-    df['2-3pos'] = df['two_p_v_d_pos'] - df['three_p_v_d_pos']
-    df['5-6pos'] = df['five_p_v_d_pos'] - df['six_p_v_d_pos']
+    df_sort = df_sort[df_sort['two_p_v_d_pos'].notna()].reset_index()
 
-    df['2-3pos'] = df['2-3pos'].abs()
-    df['5-6pos'] = df['5-6pos'].abs()
-    df.insert(46, '46', '')
+    df['two_p_v_d_pos'] = df_sort['two_p_v_d_pos']
+    df['three_p_v_d_pos'] = df_sort['three_p_v_d_pos']
+    df['five_p_v_d_pos'] = df_sort['five_p_v_d_pos']
+    df['six_p_v_d_pos'] = df_sort['six_p_v_d_pos']
 
-    df['2-3neg'] = df['two_p_v_d_neg'] - df['three_p_v_d_neg']
-    df['5-6neg'] = df['five_p_v_d_neg'] - df['six_p_v_d_neg']
+    df['2_p_v_d_pos_percentage'] = df['two_p_v_d_pos'].apply(lambda a: (a/df['two_p_v_d_pos'].sum())*100)
+    df['3_p_v_d_pos_percentage'] = df['three_p_v_d_pos'].apply(lambda a: (a/df['three_p_v_d_pos'].sum())*100)
+    df['5_p_v_d_pos_percentage'] = df['five_p_v_d_pos'].apply(lambda a: (a/df['five_p_v_d_pos'].sum())*100)
+    df['6_p_v_d_pos_percentage'] = df['six_p_v_d_pos'].apply(lambda a: (a/df['six_p_v_d_pos'].sum())*100)
 
-    df['2-3neg'] = df['2-3neg'].abs()
-    df['5-6neg'] = df['5-6neg'].abs()
+    df['2_p_v_d_neg_percentage'] = df['two_p_v_d_neg'].apply(lambda a: (a/df['two_p_v_d_neg'].sum())*100)
+    df['3_p_v_d_neg_percentage'] = df['three_p_v_d_neg'].apply(lambda a: (a/df['three_p_v_d_neg'].sum())*100)
+    df['5_p_v_d_neg_percentage'] = df['five_p_v_d_neg'].apply(lambda a: (a/df['five_p_v_d_neg'].sum())*100)
+    df['6_p_v_d_neg_percentage'] = df['six_p_v_d_neg'].apply(lambda a: (a/df['six_p_v_d_neg'].sum())*100)
+
+
+    df.insert(25, 'twenty_fifth', '')
+    df.insert(30, '29', '')
+    df.insert(35, '35', '')
+   
+
+    #AB 3 or 5 ko dekhna hai agar dono chota chota hai toh poori row rakhni hai warna nahi rakhni hai
+
+    df_sort['2_p_v_d_pos_p_c'] = df.apply(lambda x : x['2_p_v_d_pos_percentage'] if x['3_p_v_d_pos_percentage'] < x['2_p_v_d_pos_percentage'] and x['6_p_v_d_pos_percentage'] < x['5_p_v_d_pos_percentage'] else np.NaN , axis=1)
+    df_sort['3_p_v_d_pos_p_c'] = df.apply(lambda x : x['3_p_v_d_pos_percentage'] if x['3_p_v_d_pos_percentage'] < x['2_p_v_d_pos_percentage'] and x['6_p_v_d_pos_percentage'] < x['5_p_v_d_pos_percentage'] else np.NaN , axis=1)
+    df_sort['5_p_v_d_pos_p_c'] = df.apply(lambda x : x['5_p_v_d_pos_percentage'] if x['3_p_v_d_pos_percentage'] < x['2_p_v_d_pos_percentage'] and x['6_p_v_d_pos_percentage'] < x['5_p_v_d_pos_percentage'] else np.NaN , axis=1)
+    df_sort['6_p_v_d_pos_p_c'] = df.apply(lambda x : x['6_p_v_d_pos_percentage'] if x['3_p_v_d_pos_percentage'] < x['2_p_v_d_pos_percentage'] and x['6_p_v_d_pos_percentage'] < x['5_p_v_d_pos_percentage'] else np.NaN , axis=1)
+
+    df_sort['2_p_v_d_neg_p_c'] = df.apply(lambda x : x['2_p_v_d_neg_percentage'] if x['3_p_v_d_neg_percentage'] < x['2_p_v_d_neg_percentage'] and x['6_p_v_d_neg_percentage'] < x['5_p_v_d_neg_percentage'] else np.NaN , axis=1)
+    df_sort['3_p_v_d_neg_p_c'] = df.apply(lambda x : x['3_p_v_d_neg_percentage'] if x['3_p_v_d_neg_percentage'] < x['2_p_v_d_neg_percentage'] and x['6_p_v_d_neg_percentage'] < x['5_p_v_d_neg_percentage'] else np.NaN , axis=1)
+    df_sort['5_p_v_d_neg_p_c'] = df.apply(lambda x : x['5_p_v_d_neg_percentage'] if x['3_p_v_d_neg_percentage'] < x['2_p_v_d_neg_percentage'] and x['6_p_v_d_neg_percentage'] < x['5_p_v_d_neg_percentage'] else np.NaN , axis=1)
+    df_sort['6_p_v_d_neg_p_c'] = df.apply(lambda x : x['6_p_v_d_neg_percentage'] if x['3_p_v_d_neg_percentage'] < x['2_p_v_d_neg_percentage'] and x['6_p_v_d_neg_percentage'] < x['5_p_v_d_neg_percentage'] else np.NaN , axis=1)
+
+    list_2_p_v_d_pos_p_c = df_sort['2_p_v_d_pos_p_c'].values.tolist()
+    list_3_p_v_d_pos_p_c = df_sort['3_p_v_d_pos_p_c'].values.tolist()
+    list_5_p_v_d_pos_p_c = df_sort['5_p_v_d_pos_p_c'].values.tolist()
+    list_6_p_v_d_pos_p_c = df_sort['6_p_v_d_pos_p_c'].values.tolist()
+
+    list_2_p_v_d_neg_p_c = df_sort['2_p_v_d_neg_p_c'].values.tolist()
+    list_3_p_v_d_neg_p_c = df_sort['3_p_v_d_neg_p_c'].values.tolist()
+    list_5_p_v_d_neg_p_c = df_sort['5_p_v_d_neg_p_c'].values.tolist()
+    list_6_p_v_d_neg_p_c = df_sort['6_p_v_d_neg_p_c'].values.tolist()
+
+    list_2_p_v_d_pos_p_c.append(df_sort['2_p_v_d_pos_p_c'].mean())
+    list_3_p_v_d_pos_p_c.append(df_sort['3_p_v_d_pos_p_c'].mean())
+    list_5_p_v_d_pos_p_c.append(df_sort['5_p_v_d_pos_p_c'].mean())
+    list_6_p_v_d_pos_p_c.append(df_sort['6_p_v_d_pos_p_c'].mean())
+    
+    list_2_p_v_d_neg_p_c.append(df_sort['2_p_v_d_neg_p_c'].mean())
+    list_3_p_v_d_neg_p_c.append(df_sort['3_p_v_d_neg_p_c'].mean())
+    list_5_p_v_d_neg_p_c.append(df_sort['5_p_v_d_neg_p_c'].mean())
+    list_6_p_v_d_neg_p_c.append(df_sort['6_p_v_d_neg_p_c'].mean())
+
+    list_2_p_v_d_pos_p_c.append(df_sort['2_p_v_d_pos_p_c'].count())
+    list_3_p_v_d_pos_p_c.append(df_sort['3_p_v_d_pos_p_c'].count())
+    list_5_p_v_d_pos_p_c.append(df_sort['5_p_v_d_pos_p_c'].count())
+    list_6_p_v_d_pos_p_c.append(df_sort['6_p_v_d_pos_p_c'].count())
+    
+    list_2_p_v_d_neg_p_c.append(df_sort['2_p_v_d_neg_p_c'].count())
+    list_3_p_v_d_neg_p_c.append(df_sort['3_p_v_d_neg_p_c'].count())
+    list_5_p_v_d_neg_p_c.append(df_sort['5_p_v_d_neg_p_c'].count())
+    list_6_p_v_d_neg_p_c.append(df_sort['6_p_v_d_neg_p_c'].count())
+
+
+    df.insert(40, '40', '')
+    print("THIS IS DF SORT NEWWWW")
+    del df_sort['index']
+    del df_sort['two_p_v_d']
+    del df_sort['three_p_v_d']
+    del df_sort['five_p_v_d']
+    del df_sort['six_p_v_d']
+    del df_sort['two_p_v_d_pos']
+    del df_sort['three_p_v_d_pos']
+    del df_sort['five_p_v_d_pos']
+    del df_sort['six_p_v_d_pos']
+
+    #df_sort.loc[df_sort.shape[0]] = df_sort.mean()
+    #df_sort.loc[df_sort.shape[0]] = df_sort.count()
+
+#### END WALA PART HAI JISME COUNT KRNA THA PHIR PERCETAGE NIKALNI THI PHIR MINUS KRNA THA
+
+    twopospercentage = (df_sort['2_p_v_d_pos_p_c'].mean()*100)/(df_sort['2_p_v_d_pos_p_c'].mean()+df_sort['2_p_v_d_neg_p_c'].mean())
+    threepospercentage = (df_sort['3_p_v_d_pos_p_c'].mean()*100)/(df_sort['3_p_v_d_pos_p_c'].mean()+df_sort['3_p_v_d_neg_p_c'].mean())
+    fivepospercentage = (df_sort['5_p_v_d_pos_p_c'].mean()*100)/(df_sort['5_p_v_d_pos_p_c'].mean()+df_sort['5_p_v_d_neg_p_c'].mean())
+    sixpospercentage = (df_sort['6_p_v_d_pos_p_c'].mean()*100)/(df_sort['6_p_v_d_pos_p_c'].mean()+df_sort['6_p_v_d_neg_p_c'].mean())
+    
+    twonegpercentage = (df_sort['2_p_v_d_neg_p_c'].mean()*100)/(df_sort['2_p_v_d_pos_p_c'].mean()+df_sort['2_p_v_d_neg_p_c'].mean())
+    threenegpercentage = (df_sort['3_p_v_d_neg_p_c'].mean()*100)/(df_sort['3_p_v_d_pos_p_c'].mean()+df_sort['3_p_v_d_neg_p_c'].mean())
+    fivenegpercentage = (df_sort['5_p_v_d_neg_p_c'].mean()*100)/(df_sort['5_p_v_d_pos_p_c'].mean()+df_sort['5_p_v_d_neg_p_c'].mean())
+    sixnegpercentage = (df_sort['6_p_v_d_neg_p_c'].mean()*100)/(df_sort['6_p_v_d_pos_p_c'].mean()+df_sort['6_p_v_d_neg_p_c'].mean())
+
+    list_2_p_v_d_pos_p_c.append(twopospercentage)
+    list_3_p_v_d_pos_p_c.append(threepospercentage)
+    list_3_p_v_d_pos_p_c.append(threepospercentage/twopospercentage)
+    list_5_p_v_d_pos_p_c.append(fivepospercentage)
+    list_6_p_v_d_pos_p_c.append(sixpospercentage)
+    list_6_p_v_d_pos_p_c.append(sixpospercentage/fivepospercentage)
+
+    list_2_p_v_d_neg_p_c.append(twonegpercentage)
+    list_3_p_v_d_neg_p_c.append(threenegpercentage)
+    list_3_p_v_d_neg_p_c.append(threenegpercentage/twonegpercentage)
+    list_5_p_v_d_neg_p_c.append(fivenegpercentage)
+    list_6_p_v_d_neg_p_c.append(sixnegpercentage)
+    list_6_p_v_d_neg_p_c.append(sixnegpercentage/fivenegpercentage)
+
+    total_rows = df.shape[0]
+    blank_list = [np.NaN]    
+
+    df['2_p_v_d_pos_p_c'] = list_2_p_v_d_pos_p_c + blank_list*(total_rows - len(list_2_p_v_d_pos_p_c))
+    df['3_p_v_d_pos_p_c'] = list_3_p_v_d_pos_p_c + blank_list*(total_rows - len(list_3_p_v_d_pos_p_c))
+    df['5_p_v_d_pos_p_c'] = list_5_p_v_d_pos_p_c + blank_list*(total_rows - len(list_5_p_v_d_pos_p_c))
+    df['6_p_v_d_pos_p_c'] = list_6_p_v_d_pos_p_c + blank_list*(total_rows - len(list_6_p_v_d_pos_p_c))
+
+    df['2_p_v_d_neg_p_c'] = list_2_p_v_d_neg_p_c + blank_list*(total_rows - len(list_2_p_v_d_neg_p_c))
+    df['3_p_v_d_neg_p_c'] = list_3_p_v_d_neg_p_c + blank_list*(total_rows - len(list_3_p_v_d_neg_p_c))
+    df['5_p_v_d_neg_p_c'] = list_5_p_v_d_neg_p_c + blank_list*(total_rows - len(list_5_p_v_d_neg_p_c))
+    df['6_p_v_d_neg_p_c'] = list_6_p_v_d_neg_p_c + blank_list*(total_rows - len(list_6_p_v_d_neg_p_c))
+
+    print(df_sort)
+    df.insert(45, '45', '')
+    df.insert(50, '50', '')
+    
+    #df['two_p_v_d_abs'] = df['two_p_v_d'].abs()
+    #df['three_p_v_d_abs'] = df['three_p_v_d'].abs()
+    #df['five_p_v_d_abs'] = df['five_p_v_d'].abs()
+    #df['six_p_v_d_abs'] = df['six_p_v_d'].abs()
+
+    #df.insert(30, 'thirty', '')
+
+    #df['2-3abs'] = df['two_p_v_d_abs'] - df['three_p_v_d_abs']
+    #df['5-6abs'] = df['five_p_v_d_abs'] - df['six_p_v_d_abs']
+
+    #df['2-3abs'] = df['2-3abs'].abs()
+    #df['5-6abs'] = df['5-6abs'].abs()
+
+
+    #df.insert(33, '33', '')
+    #two_p_v_d_pos_list = df.apply(lambda x :x['two_p_v_d'] if x['two_p_v_d'] > 0 else np.NaN ,axis = 1).values.tolist()
+    #two_p_v_d_pos_list = [x for x in two_p_v_d_pos_list if math.isnan(x) == False]
+    #df['two_p_v_d_pos'] = two_p_v_d_pos_list + another_blank_list*(total_rows_another - len(two_p_v_d_pos_list))
+
+    #three_p_v_d_pos_list = df.apply(lambda x :x['three_p_v_d'] if x['two_p_v_d'] > 0 else np.NaN ,axis = 1).values.tolist()
+    #three_p_v_d_pos_list = [x for x in three_p_v_d_pos_list if math.isnan(x) == False]
+    #df['three_p_v_d_pos'] = three_p_v_d_pos_list + another_blank_list*(total_rows_another - len(three_p_v_d_pos_list))
+
+    #five_p_v_d_pos_list = df.apply(lambda x :x['five_p_v_d'] if x['five_p_v_d'] > 0 else np.NaN ,axis = 1).values.tolist()
+    #five_p_v_d_pos_list = [x for x in five_p_v_d_pos_list if math.isnan(x) == False]
+    #df['five_p_v_d_pos'] = five_p_v_d_pos_list + another_blank_list*(total_rows_another - len(five_p_v_d_pos_list))
+    
+    #six_p_v_d_pos_list = df.apply(lambda x :x['six_p_v_d'] if x['five_p_v_d'] > 0 else np.NaN ,axis = 1).values.tolist()
+    #six_p_v_d_pos_list = [x for x in six_p_v_d_pos_list if math.isnan(x) == False]
+    #df['six_p_v_d_pos'] = six_p_v_d_pos_list + another_blank_list*(total_rows_another - len(six_p_v_d_pos_list))
+
+    #df.insert(38, '38', '')
+    #two_p_v_d_neg_list = df.apply(lambda x :x['two_p_v_d'] if x['two_p_v_d'] < 0 else np.NaN ,axis = 1).values.tolist()
+    #two_p_v_d_neg_list = [x for x in two_p_v_d_neg_list if math.isnan(x) == False]
+    #df['two_p_v_d_neg'] = two_p_v_d_neg_list + another_blank_list*(total_rows_another - len(two_p_v_d_neg_list))
+    
+    #three_p_v_d_neg_list = df.apply(lambda x :x['three_p_v_d'] if x['two_p_v_d'] < 0 else np.NaN ,axis = 1).values.tolist()
+    #three_p_v_d_neg_list = [x for x in three_p_v_d_neg_list if math.isnan(x) == False]
+    #df['three_p_v_d_neg'] = three_p_v_d_neg_list + another_blank_list*(total_rows_another - len(three_p_v_d_neg_list))
+
+    #five_p_v_d_neg_list = df.apply(lambda x :x['five_p_v_d'] if x['five_p_v_d'] < 0 else np.NaN ,axis = 1).values.tolist()
+    #five_p_v_d_neg_list = [x for x in five_p_v_d_neg_list if math.isnan(x) == False]
+    #df['five_p_v_d_neg'] = five_p_v_d_neg_list + another_blank_list*(total_rows_another - len(five_p_v_d_neg_list))
+
+    #six_p_v_d_neg_list = df.apply(lambda x :x['six_p_v_d'] if x['five_p_v_d'] < 0 else np.NaN ,axis = 1).values.tolist()
+    #six_p_v_d_neg_list = [x for x in six_p_v_d_neg_list if math.isnan(x) == False]
+    #df['six_p_v_d_neg'] = six_p_v_d_neg_list + another_blank_list*(total_rows_another - len(six_p_v_d_neg_list))
+    
+    #df['two_p_v_d_neg'] = df['two_p_v_d_neg'].abs()
+    #df['three_p_v_d_neg'] = df['three_p_v_d_neg'].abs()
+    #df['five_p_v_d_neg'] = df['five_p_v_d_neg'].abs()
+    #df['six_p_v_d_neg'] = df['six_p_v_d_neg'].abs()
+
+    #df.insert(43, '43', '')
+
+    #df['2-3pos'] = df['two_p_v_d_pos'] - df['three_p_v_d_pos']
+    #df['5-6pos'] = df['five_p_v_d_pos'] - df['six_p_v_d_pos']
+
+    #df['2-3pos'] = df['2-3pos'].abs()
+    #df['5-6pos'] = df['5-6pos'].abs()
+    #df.insert(46, '46', '')
+
+    #df['2-3neg'] = df['two_p_v_d_neg'] - df['three_p_v_d_neg']
+    #df['5-6neg'] = df['five_p_v_d_neg'] - df['six_p_v_d_neg']
+
+    #df['2-3neg'] = df['2-3neg'].abs()
+    #df['5-6neg'] = df['5-6neg'].abs()
 
     #CHOTA WALA RAKHNA HAI BADA WALA HATANA HAI
-    df.insert(49, '49', '')
+    #df.insert(49, '49', '')
 
-    df['2-3pos_a'] = df.apply(lambda x : x['2-3pos'] if x['2-3pos'] < x['5-6pos'] else np.NaN, axis = 1)
-    df['5-6pos_a'] = df.apply(lambda x : x['5-6pos'] if x['5-6pos'] < x['2-3pos'] else np.NaN, axis = 1)
+    #df['2-3pos_a'] = df.apply(lambda x : x['2-3pos'] if x['2-3pos'] < x['5-6pos'] else np.NaN, axis = 1)
+    #df['5-6pos_a'] = df.apply(lambda x : x['5-6pos'] if x['5-6pos'] < x['2-3pos'] else np.NaN, axis = 1)
 
-    df['2-3neg_a'] = df.apply(lambda x : x['2-3neg'] if x['2-3neg'] < x['5-6neg'] else np.NaN, axis = 1)
-    df['5-6neg_a'] = df.apply(lambda x : x['5-6neg'] if x['5-6neg'] < x['2-3neg'] else np.NaN, axis = 1)
+    #df['2-3neg_a'] = df.apply(lambda x : x['2-3neg'] if x['2-3neg'] < x['5-6neg'] else np.NaN, axis = 1)
+    #df['5-6neg_a'] = df.apply(lambda x : x['5-6neg'] if x['5-6neg'] < x['2-3neg'] else np.NaN, axis = 1)
 
-    av_23_pos_a = df['2-3pos_a'].mean()
-    av_56_pos_a = df['5-6pos_a'].mean()
+    #av_23_pos_a = df['2-3pos_a'].mean()
+    #av_56_pos_a = df['5-6pos_a'].mean()
 
-    av_23_neg_a = df['2-3neg_a'].mean()
-    av_56_neg_a = df['5-6neg_a'].mean()
+    #av_23_neg_a = df['2-3neg_a'].mean()
+    #av_56_neg_a = df['5-6neg_a'].mean()
 
-    av_23_pos_a_percent = av_23_pos_a*100/(av_23_pos_a + av_23_neg_a)
-    av_23_neg_a_percent = av_23_neg_a*100/(av_23_pos_a + av_23_neg_a)
+    #av_23_pos_a_percent = av_23_pos_a*100/(av_23_pos_a + av_23_neg_a)
+    #av_23_neg_a_percent = av_23_neg_a*100/(av_23_pos_a + av_23_neg_a)
     
-    av_56_pos_a_percent = av_56_pos_a*100/(av_56_pos_a+av_56_neg_a)
-    av_56_neg_a_percent = av_56_neg_a*100/(av_56_pos_a+av_56_neg_a)
+    #av_56_pos_a_percent = av_56_pos_a*100/(av_56_pos_a+av_56_neg_a)
+    #av_56_neg_a_percent = av_56_neg_a*100/(av_56_pos_a+av_56_neg_a)
 
-    a = df['2-3pos_a'].values.tolist()
-    a = [x for x in a if math.isnan(x) == False]
-    a.append(av_23_pos_a)
-    a.append(av_23_pos_a_percent)
+    #a = df['2-3pos_a'].values.tolist()
+    #a = [x for x in a if math.isnan(x) == False]
+    #a.append(av_23_pos_a)
+    #a.append(av_23_pos_a_percent)
 
 
-    b = df['5-6pos_a'].values.tolist()
-    b = [x for x in b if math.isnan(x) == False]
-    b.append(av_56_pos_a)
-    b.append(av_56_pos_a_percent)
+    #b = df['5-6pos_a'].values.tolist()
+    #b = [x for x in b if math.isnan(x) == False]
+    #b.append(av_56_pos_a)
+    #b.append(av_56_pos_a_percent)
 
-    c = df['2-3neg_a'].values.tolist()
-    c = [x for x in c if math.isnan(x) == False]
-    c.append(av_23_neg_a)
-    c.append(av_23_neg_a_percent)
+    #c = df['2-3neg_a'].values.tolist()
+    #c = [x for x in c if math.isnan(x) == False]
+    #c.append(av_23_neg_a)
+    #c.append(av_23_neg_a_percent)
 
-    d = df['5-6neg_a'].values.tolist()
-    d = [x for x in d if math.isnan(x) == False]
-    d.append(av_56_neg_a)
-    d.append(av_56_neg_a_percent)
-    total_rows_another = df.shape[0]
+    #d = df['5-6neg_a'].values.tolist()
+    #d = [x for x in d if math.isnan(x) == False]
+    #d.append(av_56_neg_a)
+    #d.append(av_56_neg_a_percent)
+#    total_rows_another = df.shape[0]
 
-    print(f'length of a {len(a)}')
-    print(f'total rows {total_rows_another}')
-    print(f'remainder {total_rows_another - len(a)}')
-    df['2-3pos_a'] = a + another_blank_list*(total_rows_another - len(a))
-    df['5-6pos_a'] = b + another_blank_list*(total_rows_another - len(b))
-    df['2-3neg_a'] = c + another_blank_list*(total_rows_another - len(c))
-    df['5-6neg_a'] = d + another_blank_list*(total_rows_another - len(d))
+ #   print(f'length of a {len(a)}')
+ #   print(f'total rows {total_rows_another}')
+ #   print(f'remainder {total_rows_another - len(a)}')
+ #   df['2-3pos_a'] = a + another_blank_list*(total_rows_another - len(a))
+ #   df['5-6pos_a'] = b + another_blank_list*(total_rows_another - len(b))
+ #   df['2-3neg_a'] = c + another_blank_list*(total_rows_another - len(c))
+ #   df['5-6neg_a'] = d + another_blank_list*(total_rows_another - len(d))
 
 
 
