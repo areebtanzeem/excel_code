@@ -376,11 +376,26 @@ def merge_converter(filename):
     df['5_p_v_d_pos_percentage'] = df['five_p_v_d_pos'].apply(lambda a: (a/df['five_p_v_d_pos'].sum())*100)
     df['6_p_v_d_pos_percentage'] = df['six_p_v_d_pos'].apply(lambda a: (a/df['six_p_v_d_pos'].sum())*100)
 
-    df['2_p_v_d_neg_percentage'] = df['two_p_v_d_neg'].apply(lambda a: (a/df['two_p_v_d_neg'].sum())*100)
-    df['3_p_v_d_neg_percentage'] = df['three_p_v_d_neg'].apply(lambda a: (a/df['three_p_v_d_neg'].sum())*100)
-    df['5_p_v_d_neg_percentage'] = df['five_p_v_d_neg'].apply(lambda a: (a/df['five_p_v_d_neg'].sum())*100)
-    df['6_p_v_d_neg_percentage'] = df['six_p_v_d_neg'].apply(lambda a: (a/df['six_p_v_d_neg'].sum())*100)
+    ## DF2 FOR DROPPING ROWS WITH NAN VALUES IN NEGRATIVE PERCENTAGE OF TWO THREE FIVE SIX VAUES
+    df2 = pandas.DataFrame()
+    
 
+    df2['2_p_v_d_neg_percentage'] = df['two_p_v_d_neg'].apply(lambda a: (a/df['two_p_v_d_neg'].sum())*100)
+    df2['3_p_v_d_neg_percentage'] = df['three_p_v_d_neg'].apply(lambda a: (a/df['three_p_v_d_neg'].sum())*100)
+    df2['5_p_v_d_neg_percentage'] = df['five_p_v_d_neg'].apply(lambda a: (a/df['five_p_v_d_neg'].sum())*100)
+    df2['6_p_v_d_neg_percentage'] = df['six_p_v_d_neg'].apply(lambda a: (a/df['six_p_v_d_neg'].sum())*100)
+
+    print("THIS IS DF2 WITHOUT DROP NA")
+    print(df2)
+    df2 = df2.dropna().reset_index()
+
+    print("THIS IS DF2 WITH DROP NA")
+    print(df2)
+
+    df['2_p_v_d_neg_percentage'] = df2['2_p_v_d_neg_percentage']
+    df['3_p_v_d_neg_percentage'] = df2['3_p_v_d_neg_percentage']
+    df['5_p_v_d_neg_percentage'] = df2['5_p_v_d_neg_percentage']
+    df['6_p_v_d_neg_percentage'] = df2['6_p_v_d_neg_percentage']
 
     df.insert(25, 'twenty_fifth', '')
     df.insert(30, '29', '')
@@ -644,12 +659,12 @@ except Exception as e:
     print(f"Combine_files error")
     print(str(e))
 
-#if os.path.exists(path+"merge_sheet1_sheet2.xlsx"):
-#    try:
-merge_converter(path+"merge_sheet1_sheet2.xlsx")
-#    except Exception as e:
-#        print(f"Merge Converter error")
-#        print(str(e))
+if os.path.exists(path+"merge_sheet1_sheet2.xlsx"):
+    try:
+        merge_converter(path+"merge_sheet1_sheet2.xlsx")
+    except Exception as e:
+        print(f"Merge Converter error")
+        print(str(e))
 
 
 if os.path.exists(path+"temp_"+filenames[0]):
