@@ -414,6 +414,8 @@ def merge_converter(filename):
     df_sort['5_p_v_d_neg_p_c'] = df.apply(lambda x : x['5_p_v_d_neg_percentage'] if x['3_p_v_d_neg_percentage'] < x['2_p_v_d_neg_percentage'] and x['6_p_v_d_neg_percentage'] < x['5_p_v_d_neg_percentage'] else np.NaN , axis=1)
     df_sort['6_p_v_d_neg_p_c'] = df.apply(lambda x : x['6_p_v_d_neg_percentage'] if x['3_p_v_d_neg_percentage'] < x['2_p_v_d_neg_percentage'] and x['6_p_v_d_neg_percentage'] < x['5_p_v_d_neg_percentage'] else np.NaN , axis=1)
 
+    
+
     list_2_p_v_d_pos_p_c = df_sort['2_p_v_d_pos_p_c'].values.tolist()
     list_3_p_v_d_pos_p_c = df_sort['3_p_v_d_pos_p_c'].values.tolist()
     list_5_p_v_d_pos_p_c = df_sort['5_p_v_d_pos_p_c'].values.tolist()
@@ -499,10 +501,53 @@ def merge_converter(filename):
     df['5_p_v_d_neg_p_c'] = list_5_p_v_d_neg_p_c + blank_list*(total_rows - len(list_5_p_v_d_neg_p_c))
     df['6_p_v_d_neg_p_c'] = list_6_p_v_d_neg_p_c + blank_list*(total_rows - len(list_6_p_v_d_neg_p_c))
 
+    #LAST COLUMN ADDED
+
+    df2 = df2.iloc[0:0]
+
+    df2['AV DIVIDE BY AU'] = df_sort.apply(lambda x: x['3_p_v_d_pos_p_c']/x['2_p_v_d_pos_p_c'] , axis=1)
+    df2['AX DIVIDE BY AW'] = df_sort.apply(lambda x: x['6_p_v_d_pos_p_c']/x['5_p_v_d_pos_p_c'] , axis=1)
+    
+
+    df2['BA DIVIDE BY AZ'] = df_sort.apply(lambda x: x['3_p_v_d_neg_p_c']/x['2_p_v_d_neg_p_c'] , axis=1)
+    df2['BC DIVIDE BY BB'] = df_sort.apply(lambda x: x['6_p_v_d_neg_p_c']/x['5_p_v_d_neg_p_c'] , axis=1)
+
+    #df2.loc[df2.shape[0]] = df2.mean()
+
+    AV_DIVIDE_BY_AU = df2['AV DIVIDE BY AU'].values.tolist()
+    AX_DIVIDE_BY_AW = df2['AX DIVIDE BY AW'].values.tolist()
+
+    BA_DIVIDE_BY_AZ = df2['BA DIVIDE BY AZ'].values.tolist()
+    BC_DIVIDE_BY_BB = df2['BC DIVIDE BY BB'].values.tolist()
+
     print(df_sort)
     df.insert(45, '45', '')
     df.insert(50, '50', '')
-    
+    df.insert(55, '55', '')
+
+    AV_DIVIDE_BY_AU.append(df2['AV DIVIDE BY AU'].mean())
+    AX_DIVIDE_BY_AW.append(df2['AX DIVIDE BY AW'].mean())
+    BA_DIVIDE_BY_AZ.append(df2['BA DIVIDE BY AZ'].mean())
+    BC_DIVIDE_BY_BB.append(df2['BC DIVIDE BY BB'].mean())
+
+
+    AV_DIVIDE_BY_AU.append(df2['AV DIVIDE BY AU'].mean()*100/(df2['BA DIVIDE BY AZ'].mean()+df2['AV DIVIDE BY AU'].mean()))
+    BA_DIVIDE_BY_AZ.append(df2['BA DIVIDE BY AZ'].mean()*100/(df2['BA DIVIDE BY AZ'].mean()+df2['AV DIVIDE BY AU'].mean()))
+
+    AX_DIVIDE_BY_AW.append(df2['AX DIVIDE BY AW'].mean()*100/(df2['AX DIVIDE BY AW'].mean()+df2['BC DIVIDE BY BB'].mean()))
+    BC_DIVIDE_BY_BB.append(df2['BC DIVIDE BY BB'].mean()*100/(df2['AX DIVIDE BY AW'].mean()+df2['BC DIVIDE BY BB'].mean()))
+
+    AV_DIVIDE_BY_AU.append(abs(df2['AV DIVIDE BY AU'].mean() - df2['BA DIVIDE BY AZ'].mean()))
+    BA_DIVIDE_BY_AZ.append(abs(df2['AX DIVIDE BY AW'].mean() - df2['BC DIVIDE BY BB'].mean()))
+
+    total_rows = df.shape[0]
+    blank_list = [np.NaN]
+
+    df['AV DIVIDE BY AU'] = AV_DIVIDE_BY_AU + blank_list * (total_rows - len(AV_DIVIDE_BY_AU))
+    df['AX DIVIDE BY AW'] = AX_DIVIDE_BY_AW + blank_list * (total_rows - len(AX_DIVIDE_BY_AW)) 
+    df['BA DIVIDE BY AZ'] = BA_DIVIDE_BY_AZ + blank_list * (total_rows - len(BA_DIVIDE_BY_AZ)) 
+    df['BC DIVIDE BY BB'] = BC_DIVIDE_BY_BB + blank_list * (total_rows - len(BC_DIVIDE_BY_BB)) 
+
     #df['two_p_v_d_abs'] = df['two_p_v_d'].abs()
     #df['three_p_v_d_abs'] = df['three_p_v_d'].abs()
     #df['five_p_v_d_abs'] = df['five_p_v_d'].abs()
