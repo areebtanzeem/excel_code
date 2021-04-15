@@ -202,27 +202,152 @@ def merge_converter(filename):
     df['j'] = df['j'].fillna(0)
     df['k'] = df.j.diff()
     df['j'] = df['j'].replace(0,np.NaN)
+    df['k'] = df['k'].replace(0,np.NaN)
     df['l'] = df['three']
 
-    df['n'] = df['one']
-    df['o'] = df['two']
+    df['n'] = df['four']
+    df['o'] = df['five']
     df['o'] = df['o'].fillna(0)
     df['p'] = df.o.diff()
     df['o'] = df['o'].replace(0,np.NaN)
-    df['q'] = df['three']
+    df['p'] = df['p'].replace(0,np.NaN)
+    df['q'] = df['six']
     
     df.insert(12, 'twelve', '')
 
-    df_one = pandas.Dataframe()
+    df_one = pandas.DataFrame()
+
+    df_one['i'] = df['one']
+    df_one['j'] = df['two']
+    df_one['k'] = df['k']
+    df_one['l'] = df['three']
+    df_one['l/k'] = df_one.apply(lambda x : x['l']/x['k'] if x['l'] != 0 and x['k'] != 0 else np.NaN, axis = 1 )
+    df_one['l/k_pos'] = df_one.apply(lambda x : x['l/k'] if x['l/k'] > 0 else np.NaN , axis = 1)
+    df_one['l/k_neg'] = df_one.apply(lambda x : x['l/k'] if x['l/k'] < 0 else np.NaN , axis = 1)
+
+    df_one['n'] = df['four']
+    df_one['o'] = df['five']
+    df_one['p'] = df['p']
+    df_one['q'] = df['six']
+    df_one['q/p'] = df_one.apply(lambda x : x['q']/x['p'] if x['q'] != 0 and x['p'] != 0 else np.NaN, axis = 1 )
+    df_one['q/p_pos'] = df_one.apply(lambda x : x['q/p'] if x['q/p'] > 0 else np.NaN , axis = 1)
+    df_one['q/p_neg'] = df_one.apply(lambda x : x['q/p'] if x['q/p'] < 0 else np.NaN , axis = 1)
+
 
     
+    # DELETING THE FIRST ROW
+    df_one = df_one.iloc[1:]
+    
+    #ADDING DF_ONE DATA TO DF AGAIN
 
+    df['s'] = df_one['i']
+    df['t'] = df_one['j']
+    df['u'] = df_one['k']
+    df['v'] = df_one['l']
+    df['w'] = df_one['l/k']
+    df['x'] = df_one['l/k_pos']
+    df['y'] = df_one['l/k_neg']
+
+    df['aa'] = df_one['n']
+    df['ab'] = df_one['o']
+    df['ac'] = df_one['p']
+    df['ad'] = df_one['q']
+    df['ae'] = df_one['q/p']
+    df['af'] = df_one['q/p_pos']
+    df['ag'] = df_one['q/p_neg']
+
+    df.insert(17, '17', '')
+    df.insert(25, '25', '')
+
+     
+    df1 = top_values(df,5)
 
     
     writer = pandas.ExcelWriter(path+"merge_converter.xlsx", engine='xlsxwriter')
-    df.to_excel(writer, sheet_name='Sheet1', index=False)
+    df1.to_excel(writer, sheet_name='Sheet1', index=False)
     writer.save()
     print(df)
+
+def top_values(df,n):
+    #print(f"This is dataframe in top values for value {n}")
+    #print(df)
+    #POSITIVE
+    x_list = df['x'].values.tolist()
+    x_list = [x for x in x_list if math.isnan(x) == False]
+    x_list = list(set(x_list))
+    x_list = sorted(x_list)
+    x_list = x_list[0:n]
+    print("X LIST",x_list)
+    
+    #NEGATIVE LIST
+    y_list = df['y'].values.tolist()
+    y_list = [x for x in y_list if math.isnan(x) == False]
+    y_list = list(set(y_list))
+    y_list = sorted(y_list,reverse=True)
+    y_list = y_list[0:n]
+    print("Y LIST",y_list)
+    
+    
+    #POSITIVE LIST
+    af_list = df['af'].values.tolist()
+    af_list = [x for x in af_list if math.isnan(x) == False]
+    af_list = list(set(af_list))
+    af_list = sorted(af_list)
+    af_list = af_list[0:n]
+    print("AF LIST",af_list)
+    
+    #NEGATIVE LIST
+    ag_list = df['ag'].values.tolist()
+    ag_list = [x for x in ag_list if math.isnan(x) == False]
+    ag_list = list(set(ag_list))
+    ag_list = sorted(ag_list,reverse=True)
+    ag_list = ag_list[0:n]
+    print("AG LIST",ag_list)
+    
+
+    total_rows = df.shape[0]
+    blank_list = [np.NaN]
+
+    df['ai'] = x_list + blank_list*(total_rows - len(x_list))
+    df['aj'] = y_list + blank_list*(total_rows - len(y_list))
+    df['ak'] = af_list + blank_list*(total_rows - len(af_list))
+    df['al'] = ag_list + blank_list*(total_rows - len(ag_list))
+    
+    df.insert(33,'33','')
+    #ABS FOR ABOVE VALUES
+
+    df['an'] = df['ai'].abs()
+    df['ao'] = df['aj'].abs()
+    df['ap'] = df['ak'].abs()
+    df['aq'] = df['al'].abs()
+    df.insert(38,'38','')
+
+    x_sum = []
+    y_sum = []
+    af_sum = []
+    ag_sum = []
+
+    x_sum.append(df['an'].sum())
+    y_sum.append(df['ao'].sum())
+    af_sum.append(df['ap'].sum())
+    ag_sum.append(df['aq'].sum())
+
+    x_sum.append(df['an'].sum()*100/(df['an'].sum()+df['ao'].sum()))
+    y_sum.append(df['ao'].sum()*100/(df['an'].sum()+df['ao'].sum()))
+    af_sum.append(df['ap'].sum()*100/(df['ap'].sum()+df['aq'].sum()))
+    ag_sum.append(df['aq'].sum()*100/(df['ap'].sum()+df['aq'].sum()))
+    
+    y_sum.append( (df['ao'].sum()*100/(df['an'].sum()+df['ao'].sum())) -  df['an'].sum()*100/(df['an'].sum()+df['ao'].sum()))
+    af_sum.append( (df['ap'].sum()*100/(df['ap'].sum()+df['aq'].sum())) - (df['aq'].sum()*100/(df['ap'].sum()+df['aq'].sum())) )
+
+    df['as'] = x_sum + blank_list*(total_rows - len(x_sum))
+    df['at'] = y_sum + blank_list*(total_rows - len(y_sum))
+    df['au'] = af_sum + blank_list*(total_rows - len(af_sum))
+    df['av'] = ag_sum + blank_list*(total_rows - len(ag_sum))
+
+    df.insert(43,'43','')
+
+    return df
 
 
 filenames = ["sheet1.xlsx", "sheet2.xlsx"]
@@ -263,12 +388,12 @@ except Exception as e:
 
 if os.path.exists(path+"merge_sheet1_sheet2.xlsx"):
     try:
-        #pass
-        merge_converter(path+"merge_sheet1_sheet2.xlsx")
+        pass
+        
     except Exception as e:
         print(f"Merge Converter error")
         print(str(e))
-
+merge_converter(path+"merge_sheet1_sheet2_two.xlsx")
 
 if os.path.exists(path+"temp_"+filenames[0]):
     os.remove(path+"temp_"+filenames[0])
