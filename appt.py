@@ -193,23 +193,25 @@ def combine_files_two(filename1, filename2):
 
 
 
-def merge_converter(filename):
+def merge_converter(filename,count):
     df = pandas.read_excel(filename)
     df.insert(7, 'seven', '')
     # PERCENTAGE CALCULATIONS
     df['i'] = df['one']
     df['j'] = df['two']
-    df['j'] = df['j'].fillna(0)
+    #df['j'] = df['j'].fillna(0)
     df['k'] = df.j.diff()
-    df['j'] = df['j'].replace(0,np.NaN)
+    #df['j'] = df['j'].replace(0,np.NaN)
     df['k'] = df['k'].replace(0,np.NaN)
     df['l'] = df['three']
 
+    # 
+
     df['n'] = df['four']
     df['o'] = df['five']
-    df['o'] = df['o'].fillna(0)
+    #df['o'] = df['o'].fillna(0)
     df['p'] = df.o.diff()
-    df['o'] = df['o'].replace(0,np.NaN)
+    #df['o'] = df['o'].replace(0,np.NaN)
     df['p'] = df['p'].replace(0,np.NaN)
     df['q'] = df['six']
     
@@ -259,24 +261,56 @@ def merge_converter(filename):
     df.insert(17, '17', '')
     df.insert(25, '25', '')
 
-     
-    df1 = top_values(df,5)
+    df1 = df
+    df2 = df
+    df3 = df
+    df4 = df
 
+
+    df1 = top_values(df1,5)
     
-    writer = pandas.ExcelWriter(path+"merge_converter.xlsx", engine='xlsxwriter')
-    df1.to_excel(writer, sheet_name='Sheet1', index=False)
-    writer.save()
-    print(df)
 
-def top_values(df,n):
+
+    df2 = top_values(df2,10)
+    #df2.insert(33,'33','')
+    #df2.insert(38,'38','')
+    #df2.insert(43,'43','')
+    #df2.insert(48,'48','')
+    #df2.insert(52,'52','')
+    
+    
+    df3 = top_values(df3,20)
+    #df3.insert(33,'33','')
+    #df3.insert(38,'38','')
+    #df3.insert(43,'43','')
+    #df3.insert(48,'48','')
+    #df3.insert(52,'52','')
+    
+    df4 = top_values(df4,30)
+    #df4.insert(33,'33','')
+    #df4.insert(38,'38','')
+    #df4.insert(43,'43','')
+    #df4.insert(48,'48','')
+    #df4.insert(52,'52','')
+    
+    writer = pandas.ExcelWriter(path+"merge_converter"+str(count)+".xlsx", engine='xlsxwriter')
+    df1.to_excel(writer, sheet_name='Sheet1', index=False)
+    df2.to_excel(writer, sheet_name='Sheet2', index=False)
+    df3.to_excel(writer, sheet_name='Sheet3', index=False)
+    df4.to_excel(writer, sheet_name='Sheet4', index=False)
+    writer.save()
+    #print(df)
+
+def top_values(df,no):
     #print(f"This is dataframe in top values for value {n}")
     #print(df)
     #POSITIVE
+    df = df.copy(deep=True)
     x_list = df['x'].values.tolist()
     x_list = [x for x in x_list if math.isnan(x) == False]
     x_list = list(set(x_list))
     x_list = sorted(x_list)
-    x_list = x_list[0:n]
+    x_list = x_list[0:no]
     print("X LIST",x_list)
     
     #NEGATIVE LIST
@@ -284,7 +318,7 @@ def top_values(df,n):
     y_list = [x for x in y_list if math.isnan(x) == False]
     y_list = list(set(y_list))
     y_list = sorted(y_list,reverse=True)
-    y_list = y_list[0:n]
+    y_list = y_list[0:no]
     print("Y LIST",y_list)
     
     
@@ -293,7 +327,7 @@ def top_values(df,n):
     af_list = [x for x in af_list if math.isnan(x) == False]
     af_list = list(set(af_list))
     af_list = sorted(af_list)
-    af_list = af_list[0:n]
+    af_list = af_list[0:no]
     print("AF LIST",af_list)
     
     #NEGATIVE LIST
@@ -301,7 +335,7 @@ def top_values(df,n):
     ag_list = [x for x in ag_list if math.isnan(x) == False]
     ag_list = list(set(ag_list))
     ag_list = sorted(ag_list,reverse=True)
-    ag_list = ag_list[0:n]
+    ag_list = ag_list[0:no]
     print("AG LIST",ag_list)
     
 
@@ -313,40 +347,134 @@ def top_values(df,n):
     df['ak'] = af_list + blank_list*(total_rows - len(af_list))
     df['al'] = ag_list + blank_list*(total_rows - len(ag_list))
     
-    df.insert(33,'33','')
+    
     #ABS FOR ABOVE VALUES
 
     df['an'] = df['ai'].abs()
     df['ao'] = df['aj'].abs()
     df['ap'] = df['ak'].abs()
     df['aq'] = df['al'].abs()
-    df.insert(38,'38','')
+    
 
     x_sum = []
     y_sum = []
     af_sum = []
     ag_sum = []
 
-    x_sum.append(df['an'].sum())
-    y_sum.append(df['ao'].sum())
-    af_sum.append(df['ap'].sum())
-    ag_sum.append(df['aq'].sum())
+    x_sum.append(df['an'].mean())
+    y_sum.append(df['ao'].mean())
+    af_sum.append(df['ap'].mean())
+    ag_sum.append(df['aq'].mean())
 
-    x_sum.append(df['an'].sum()*100/(df['an'].sum()+df['ao'].sum()))
-    y_sum.append(df['ao'].sum()*100/(df['an'].sum()+df['ao'].sum()))
-    af_sum.append(df['ap'].sum()*100/(df['ap'].sum()+df['aq'].sum()))
-    ag_sum.append(df['aq'].sum()*100/(df['ap'].sum()+df['aq'].sum()))
+    x_sum.append(df['an'].mean()*100/(df['an'].mean()+df['ao'].mean()))
+    y_sum.append(df['ao'].mean()*100/(df['an'].mean()+df['ao'].mean()))
+    af_sum.append(df['ap'].mean()*100/(df['ap'].mean()+df['aq'].mean()))
+    ag_sum.append(df['aq'].mean()*100/(df['ap'].mean()+df['aq'].mean()))
     
-    y_sum.append( (df['ao'].sum()*100/(df['an'].sum()+df['ao'].sum())) -  df['an'].sum()*100/(df['an'].sum()+df['ao'].sum()))
-    af_sum.append( (df['ap'].sum()*100/(df['ap'].sum()+df['aq'].sum())) - (df['aq'].sum()*100/(df['ap'].sum()+df['aq'].sum())) )
+    y_sum.append( (df['ao'].mean()*100/(df['an'].mean()+df['ao'].mean())) -  df['an'].mean()*100/(df['an'].mean()+df['ao'].mean()))
+    af_sum.append( (df['ap'].mean()*100/(df['ap'].mean()+df['aq'].mean())) - (df['aq'].mean()*100/(df['ap'].mean()+df['aq'].mean())) )
 
     df['as'] = x_sum + blank_list*(total_rows - len(x_sum))
     df['at'] = y_sum + blank_list*(total_rows - len(y_sum))
     df['au'] = af_sum + blank_list*(total_rows - len(af_sum))
     df['av'] = ag_sum + blank_list*(total_rows - len(ag_sum))
 
-    df.insert(43,'43','')
+    
 
+    df_one = pandas.DataFrame()
+    df_two = pandas.DataFrame()
+
+    df_one['s'] = df['s']
+    df_one['t'] = df['t']
+    df_one['v'] = df['v']
+    df_one['w'] = df['w']
+
+    index_one_pos = []
+
+    for i in x_list:
+        index_one_pos.append(df_one[df_one['w']==i].index.tolist())
+    #CONVERTING INTO FLAT LIST
+    print("INSEX", index_one_pos)
+    index_one_pos = [ item for elem in index_one_pos for item in elem]
+    
+    index_one_neg = []
+
+    for j in y_list:
+        index_one_neg.append(df_one[df_one['w']==j].index.tolist())
+
+    print("INSEX", index_one_neg)
+    index_one_neg = [ item for elem in index_one_neg for item in elem]
+
+    
+
+    xy_data = []
+
+    for m in index_one_pos:
+        xy_data.append(['','',''])
+        xy_data.append( [ df_one._get_value(m-1, 's') , df_one._get_value(m-1, 't'), df_one._get_value(m-1, 'v') ] )
+        xy_data.append( [ df_one._get_value(m, 's') , df_one._get_value(m, 't'), df_one._get_value(m, 'v') ] )
+    
+    for n in index_one_neg:
+        xy_data.append(['','',''])
+        xy_data.append( [ df_one._get_value(n-1, 's') , df_one._get_value(n-1, 't'), df_one._get_value(n-1, 'v') ] )
+        xy_data.append( [ df_one._get_value(n, 's') , df_one._get_value(n, 't'), df_one._get_value(n, 'v') ] )
+
+    df_two['aa'] = df['aa']
+    df_two['ab'] = df['ab']
+    df_two['ad'] = df['ad']
+    df_two['ae'] = df['ae']
+    
+    #SECOND DATA WORK HERE
+
+    index_two_pos = []
+
+    for k in af_list:
+        index_two_pos.append(df_two[df_two['ae']==k].index.tolist())
+
+    #CONVERTING INTO FLAT LIST
+    print("INSEX", index_two_pos)
+    index_two_pos = [ item for elem in index_two_pos for item in elem]
+
+    index_two_neg = []
+
+    for l in ag_list:
+        index_two_neg.append(df_two[df_two['ae']==l].index.tolist())
+    print("INSEX", index_two_neg)
+
+    index_two_neg = [ item for elem in index_two_neg for item in elem]
+
+    print("INDEXES")
+    print(index_two_neg)
+
+    afg_data = []
+    
+    for m in index_two_pos:
+        afg_data.append(['','',''])
+        afg_data.append( [ df_two._get_value(m-1, 'aa') , df_two._get_value(m-1, 'ab'), df_two._get_value(m-1, 'ad') ] )
+        afg_data.append( [ df_two._get_value(m, 'aa') , df_two._get_value(m, 'ab'), df_two._get_value(m, 'ad') ] )
+    
+    for n in index_two_neg:
+        afg_data.append(['','',''])
+        afg_data.append( [ df_two._get_value(n-1, 'aa') , df_two._get_value(n-1, 'ab'), df_two._get_value(n-1, 'ad') ] )
+        afg_data.append( [ df_two._get_value(n, 'aa') , df_two._get_value(n, 'ab'), df_two._get_value(n, 'ad') ] )
+
+    df_three = pandas.DataFrame(xy_data,columns=['ax','ay','az'])
+    df_four = pandas.DataFrame(afg_data,columns=['bb','bc','bd'])
+
+    df['ax'] = df_three['ax']
+    df['ay'] = df_three['ay']
+    df['az'] = df_three['az']
+
+    df['bb'] = df_four['bb']
+    df['bc'] = df_four['bc']
+    df['bd'] = df_four['bd']
+
+    df.insert(33,'33','')
+    df.insert(38,'38','')
+    df.insert(43,'43','')
+    df.insert(48,'48','')
+    df.insert(52,'52','')
+    
     return df
 
 
@@ -385,15 +513,18 @@ try:
 except Exception as e:
     print(f"Combine_files error")
     print(str(e))
-
-if os.path.exists(path+"merge_sheet1_sheet2.xlsx"):
+filename2 = ['merge_sheet1_sheet2_two.xlsx','merge_sheet1_sheet2.xlsx']
+count = 1
+for naame in filename2:
     try:
-        pass
-        
+        #pass
+        merge_converter(path+naame,count)
+        count = count + 1        
     except Exception as e:
-        print(f"Merge Converter error")
+        print(f"Merge Converter error for filename {naame}")
         print(str(e))
-merge_converter(path+"merge_sheet1_sheet2_two.xlsx")
+        count = count + 1
+
 
 if os.path.exists(path+"temp_"+filenames[0]):
     os.remove(path+"temp_"+filenames[0])
@@ -403,6 +534,14 @@ if os.path.exists(path+"temp_"+filenames[1]):
 
 if os.path.exists("merge_sheet1_sheet2.xlsx"):
     os.remove("merge_sheet1_sheet2.xlsx")
+
+if os.path.exists(path+"merge_sheet1_sheet2_two.xlsx"):
+    os.remove(path+"merge_sheet1_sheet2_two.xlsx")
+
+if os.path.exists(path+"merge_sheet1_sheet2.xlsx"):
+    os.remove(path+"merge_sheet1_sheet2.xlsx")
+
+
 print("*****************************************")
 print("*****************************************")
 
