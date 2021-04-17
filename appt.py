@@ -238,7 +238,7 @@ def merge_converter(filename,count):
 
     
     # DELETING THE FIRST ROW
-    df_one = df_one.iloc[1:]
+    #df_one = df_one.iloc[1:]
     
     #ADDING DF_ONE DATA TO DF AGAIN
 
