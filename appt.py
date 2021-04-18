@@ -469,6 +469,99 @@ def top_values(df,no):
     df['bc'] = df_four['bc']
     df['bd'] = df_four['bd']
 
+    bf_list = []
+    bf_list_pos_one = []
+    bf_list_pos_two = []
+    bf_list_pos_one_average = 0
+    bf_list_pos_two_average = 0
+
+    for i in index_one_pos:
+        bf_list_pos_one.append( df_one._get_value(i-1, 't') )
+
+    for i in index_one_pos:
+        bf_list_pos_two.append( df_one._get_value(i, 't') )
+
+    bf_list_pos_one_average = sum(bf_list_pos_one)/len(bf_list_pos_one)
+    bf_list_pos_two_average = sum(bf_list_pos_two)/len(bf_list_pos_two)
+    bf4 = bf_list_pos_one_average + bf_list_pos_two_average
+    bf6 = bf_list_pos_one_average*100/bf4
+    bf7 = bf_list_pos_two_average*100/bf4
+    bf8 = abs(bf7-bf6)
+
+    bg_list = []
+
+    bg_list_neg_one = []
+    bg_list_neg_two = []
+    bg_list_neg_one_average = 0
+    bg_list_neg_two_average = 0
+
+    for i in index_one_neg:
+        bg_list_neg_one.append( df_one._get_value(i-1, 't') )
+
+    for i in index_one_neg:
+        bf_list_neg_two.append( df_one._get_value(i, 't') )
+
+    bg_list_neg_one_average = sum(bg_list_neg_one)/len(bg_list_neg_one)
+    bg_list_neg_two_average = sum(bg_list_neg_two)/len(bg_list_neg_two)
+    bg4 = bg_list_neg_one_average + bg_list_neg_two_average
+    bg6 = bg_list_neg_one_average*100/bg4
+    bg7 = bg_list_neg_two_average*100/bg4
+    bg8 = abs(bg7-bg6)
+
+    bi_list = []
+    bi_list_pos_one = []
+    bi_list_pos_two = []
+    bi_list_pos_one_average = 0
+    bi_list_pos_two_average = 0
+
+    for i in index_two_pos:
+        bi_list_pos_one.append( df_two._get_value(i-1, 'ab') )
+
+    for i in index_two_pos:
+        bi_list_pos_two.append( df_two._get_value(i, 'ab') )
+
+    bi_list_pos_one_average = sum(bi_list_pos_one)/len(bi_list_pos_one)
+    bi_list_pos_two_average = sum(bi_list_pos_two)/len(bi_list_pos_two)
+    bi4 = bi_list_pos_one_average + bi_list_pos_two_average
+    bi6 = bi_list_pos_one_average*100/bi4
+    bi7 = bi_list_pos_two_average*100/bi4
+    bi8 = abs(bi7-bi6)
+
+
+
+
+    bj_list = []
+
+    bj_list_neg_one = []
+    bj_list_neg_two = []
+    bj_list_neg_one_average = 0
+    bk_list_neg_two_average = 0
+
+    for i in index_two_neg:
+        bj_list_neg_one.append( df_two._get_value(i-1, 'ab') )
+
+    for i in index_two_neg:
+        bj_list_neg_two.append( df_two._get_value(i, 'ab') )
+
+    bj_list_neg_one_average = sum(bj_list_neg_one)/len(bj_list_neg_one)
+    bj_list_neg_two_average = sum(bj_list_neg_two)/len(bj_list_neg_two)
+    bj4 = bj_list_neg_one_average + bj_list_neg_two_average
+    bj6 = bj_list_neg_one_average*100/bj4
+    bj7 = bj_list_neg_two_average*100/bj4
+    bj8 = abs(bj7-bj6)
+
+
+    bf9 = bf8*100/(bf8+bg8)
+    bf10 = np.NaN
+    bf5 = np.NaN
+    bf11 = abs(bf9-bg9)
+
+    bg9 = bg8*100/(bg8+bf8)
+    bg10 = np.NaN
+    bg11 = np.NaN
+    bg12 = np.NaN
+
+
     df.insert(33,'33','')
     df.insert(38,'38','')
     df.insert(43,'43','')
