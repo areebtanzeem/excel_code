@@ -23,15 +23,7 @@ path = join(dirname(realpath(__file__)), 'files/')
 
 def main(filename):
     df = pandas.read_excel(filename, names=['one', 'two', 'three'],header=None)
-    writer1 = pandas.ExcelWriter(path+"temp_"+filename, engine='xlsxwriter')
-    df.to_excel(writer1, sheet_name='Added_Blank_Space', index=False)
-    writer1.save()
-
-    # For B column average and for C column sun
-    #print("Duplicate entries for file: ", filename)
-    #ids = df["one"]
-    #print(pandas.concat(g for _, g in df.groupby("one") if len(g) > 1))
-
+    
     df2 = df.groupby(['one'], as_index=False).agg(
         {'two': 'mean', 'three': 'sum'})
 
