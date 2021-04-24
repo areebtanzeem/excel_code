@@ -1,5 +1,5 @@
 import os,glob
-import sys
+import sys,re
 from os.path import join, dirname, realpath
 import pandas
 from openpyxl import load_workbook
@@ -361,6 +361,9 @@ def final_merge(filenames,final_sheet_data):
 #    print(item)
 
 if __name__ == '__main__':
+
+    start_whole = time.process_time()
+
     if not os.path.exists("files"):
         os.mkdir("files")
 
@@ -436,7 +439,7 @@ if __name__ == '__main__':
 
     os.chdir("../")
 
-    final_files.sort()
+    final_files.sort(key=lambda f: int(re.sub('\D', '', f)))
     #print("Final Files",final_files)
     
     final_sheet_data = []
@@ -444,7 +447,7 @@ if __name__ == '__main__':
 
     
     start_merge_converter = time.process_time()
-    #run_in_parallel_merge_converter()
+    run_in_parallel_merge_converter()
     merge_count = 0
     for k in final_files:
         try:
@@ -492,6 +495,8 @@ if __name__ == '__main__':
 
     print("                       ")
     print("                       ")
+
+    print("Total Time taken ",time.process_time() - start_whole,'s')
 
     print("File converted successfully!!")
     print("Press Enter to Continue!")
