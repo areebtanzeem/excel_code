@@ -181,12 +181,12 @@ def merge_converter(filename):
     
 
     df['prev_m'] = df['m'].shift()
-    df['v'] = df.apply(lambda x : x['m']*100/x['prev_m'] if x['t'] != 0 else np.NaN , axis = 1)
+    df['v'] = df.apply(lambda x : x['m']*100/x['prev_m'] if x['t'] != 0  and x['prev_m'] != 0 else np.NaN , axis = 1)
     
     #
 
     df['prev_n'] = df['n'].shift()
-    df['w'] = df.apply(lambda x : x['n']*100/x['prev_n'] if x['t'] != 0 else np.NaN , axis = 1)
+    df['w'] = df.apply(lambda x : x['n']*100/x['prev_n'] if x['t'] != 0 and x['prev_n'] != 0 else np.NaN , axis = 1)
     df['t'] = df['t'].replace(0,np.NaN)
     #
 
@@ -199,8 +199,8 @@ def merge_converter(filename):
     df['y'] = df['y'].replace(np.NaN,0)
     df['z'] = df.apply(lambda x: x['n'] if x['y'] != 0 else np.NaN , axis = 1)
 
-    df['aa'] = df.apply(lambda x : x['m']*100/x['prev_m'] if x['y'] != 0 else np.NaN , axis = 1)
-    df['ab'] = df.apply(lambda x : x['n']*100/x['prev_n'] if x['y'] != 0 else np.NaN , axis = 1)
+    df['aa'] = df.apply(lambda x : x['m']*100/x['prev_m'] if x['y'] != 0 and x['prev_m'] != 0 else np.NaN , axis = 1)
+    df['ab'] = df.apply(lambda x : x['n']*100/x['prev_n'] if x['y'] != 0 and x['prev_n'] != 0 else np.NaN , axis = 1)
 
     df['y'] = df['y'].replace(0,np.NaN)
     df['y'] = df['y'].abs()
@@ -225,12 +225,12 @@ def merge_converter(filename):
     
 
     df['prev_q'] = df['q'].shift()
-    df['af'] = df.apply(lambda x : x['q']*100/x['prev_q'] if x['ad'] != 0 else np.NaN , axis = 1)
+    df['af'] = df.apply(lambda x : x['q']*100/x['prev_q'] if x['ad'] != 0 and x['prev_q'] != 0 else np.NaN , axis = 1)
     
     #
 
     df['prev_r'] = df['r'].shift()
-    df['ag'] = df.apply(lambda x : x['r']*100/x['prev_r'] if x['ad'] != 0 else np.NaN , axis = 1)
+    df['ag'] = df.apply(lambda x : x['r']*100/x['prev_r'] if x['ad'] != 0 and x['prev_r'] != 0 else np.NaN , axis = 1)
     df['ad'] = df['ad'].replace(0,np.NaN)
     #
 
@@ -243,8 +243,8 @@ def merge_converter(filename):
     df['ai'] = df['ai'].replace(np.NaN,0)
     df['aj'] = df.apply(lambda x: x['r'] if x['ai'] != 0 else np.NaN , axis = 1)
 
-    df['ak'] = df.apply(lambda x : x['q']*100/x['prev_q'] if x['ai'] != 0 else np.NaN , axis = 1)
-    df['al'] = df.apply(lambda x : x['r']*100/x['prev_r'] if x['ai'] != 0 else np.NaN , axis = 1)
+    df['ak'] = df.apply(lambda x : x['q']*100/x['prev_q'] if x['ai'] != 0 and x['prev_q'] != 0 else np.NaN , axis = 1)
+    df['al'] = df.apply(lambda x : x['r']*100/x['prev_r'] if x['ai'] != 0 and x['prev_r'] != 0 else np.NaN , axis = 1)
 
     df['ai'] = df['ai'].replace(0,np.NaN)
     df['ai'] = df['ai'].abs()
