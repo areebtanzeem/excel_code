@@ -157,15 +157,22 @@ def merge_converter(filename):
     #print("THIS IS Df!")
     #print(df1)
 
-    df['l'] = df1['l']
-    df['m'] = df1['m']
-    df['n'] = df1['n']
-    df['14'] = df1['14']
-    df['p'] = df1['p']
-    df['q'] = df1['q']
-    df['r'] = df1['r']
+    #additional1 = pandas.DataFrame({'two_p_values': two_p_values})
+    df = pandas.concat([df, df1], axis=1)
+    #df['l'] = df1['l']
+    #df['m'] = df1['m']
+    #df['n'] = df1['n']
+    #df['14'] = df1['14']
+    #df['p'] = df1['p']
+    #df['q'] = df1['q']
+    #df['r'] = df1['r']
 
     df.insert(10,'10','')
+    #print("THIS IS DF1")
+    #print(df1)
+    df1.drop_duplicates(subset=['l'], inplace=True)
+    df1.reset_index(inplace=True,drop=True)
+    #print(df1)
 
     #LMN STARTS HERE
 
@@ -315,6 +322,8 @@ def merge_converter(filename):
     df['ak'] = temp_df['ak']
     df['al'] = temp_df['al']
     del temp_df
+    df.insert(38,'38','')
+    df = pandas.concat([df, df1], axis=1)
 
     #PQR ENDS HERE
     
@@ -408,8 +417,14 @@ if __name__ == '__main__':
     ####       COMBINE FUNCTION TAKES XLSX FILENAMES  #####
     os.chdir('./files')
     xlsx_filenames = glob.glob('*.xlsx')
-
-    xlsx_filenames.remove('main.xlsx')
+    
+    try:
+        xlsx_filenames.remove('main.xlsx')
+    except Exception as e:
+        print("!! EXCEPTION OCCURED !!")
+        print(str(e))
+        pass
+    
     os.chdir("../")
     #print('XLSX FILENAMES ', xlsx_filenames)
     
@@ -438,8 +453,13 @@ if __name__ == '__main__':
     final_files = glob.glob('*.xlsx')
 
     os.chdir("../")
-
-    final_files.sort(key=lambda f: int(re.sub('\D', '', f)))
+    try:
+        final_files = sorted(final_files)
+    except Exception as e:
+        print("!! EXCEPTION OCCURED !!")
+        print(str(e))
+        pass
+    
     #print("Final Files",final_files)
     
     final_sheet_data = []
@@ -447,7 +467,7 @@ if __name__ == '__main__':
 
     
     start_merge_converter = time.process_time()
-    run_in_parallel_merge_converter()
+    #run_in_parallel_merge_converter()
     merge_count = 0
     for k in final_files:
         try:
@@ -477,6 +497,13 @@ if __name__ == '__main__':
     os.chdir('./final_files')
 
     final_merge_files = glob.glob('*.xlsx')
+    try:
+        final_merge_files = sorted(final_merge_files)
+    except Exception as e:
+        print("!! EXCEPTION OCCURED !!")
+        print(str(e))
+        pass
+
 
     os.chdir("../")
 
