@@ -170,8 +170,8 @@ def merge_converter(filename):
     df.insert(10,'10','')
     #print("THIS IS DF1")
     #print(df1)
-    df1.drop_duplicates(subset=['l'], inplace=True)
-    df1.reset_index(inplace=True,drop=True)
+    #df1.drop_duplicates(subset=['l'], inplace=True)
+    #df1.reset_index(inplace=True,drop=True)
     #print(df1)
 
     #LMN STARTS HERE
@@ -322,14 +322,24 @@ def merge_converter(filename):
     df['ak'] = temp_df['ak']
     df['al'] = temp_df['al']
     del temp_df
-    df.insert(38,'38','')
-    df = pandas.concat([df, df1], axis=1)
+    #df.insert(38,'38','')
+    #df = pandas.concat([df, df1], axis=1)
 
     #PQR ENDS HERE
     
     #APPENDING DATA FOR FINAL SHEET
     
     #print("MERGE CONVERTER FOR FILENAME", filename)
+
+    # DELETING P Q R ROWS FROM DF1
+
+    df1.drop(columns=['14', 'p','q','r'] , inplace=True)
+    print(df1)
+
+    writer2 = pandas.ExcelWriter('step2/main.xlsx', engine='xlsxwriter') 
+    df1.to_excel(writer2, sheet_name='Sheet1', index=False)
+    writer2.save()
+
     writer = pandas.ExcelWriter(final_path+f"merge_"+filename, engine='xlsxwriter')
     df.to_excel(writer, sheet_name='Sheet1', index=False)
     writer.save()
@@ -378,6 +388,9 @@ if __name__ == '__main__':
 
     if not os.path.exists("final_files"):
         os.mkdir("final_files")
+
+    if not os.path.exists("step2"):
+        os.mkdir("step2")
 
     
 
