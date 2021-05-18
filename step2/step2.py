@@ -10,6 +10,7 @@ import operator
 import math
 import sys, time, threading
 from multiprocessing import Pool
+import math
 import tqdm
 
 path = join(dirname(realpath(__file__)), 'files/')
@@ -61,13 +62,47 @@ def combine_files(filename2):
     df1 = pandas.read_excel(filename1)
     df1['l'] = df1['l'].replace(np.nan, 0)
     df1['l'] = df1.apply(lambda x : x['l'].time() if x['l'] != 0 else np.NaN , axis = 1)
+    
+    
     df2 = pandas.read_excel(path+filename2)
 
+    
+    #print(df2)
+
+    index_main_time = df1['l'].values.tolist()
+    index_main_time = [str(x) for x in index_main_time]
+    index_main_time = [x for x in index_main_time if x != 'nan']
+    
+    #print(index_main_time)
+
+    index_of_secondary_time = []
+    for time in index_main_time:
+        index_number = df2.index[df2['one'] == time].tolist()
+        index_of_secondary_time.append(index_number)
+        #print ("Index for value",index_number,df2._get_value(index_number[0], 'one'))
+    #print("Secondary time index")
+    #print(index_of_secondary_time)
+    df2_list = []
+    df2_list.append([ np.NaN,np.NaN,np.NaN ])
+    
+    count = 0
+    i = 0
+    while i < len(index_of_secondary_time):
+        if count == 2:
+            count = 0
+            df2_list.append([ np.NaN,np.NaN,np.NaN ])
+        else:
+            df2_list.append([ df2._get_value(index_of_secondary_time[i][0], 'one'),df2._get_value(index_of_secondary_time[i][0], 'two'),df2._get_value(index_of_secondary_time[i][0], 'three') ])
+            #print([ df2._get_value(i[0], 'one'),df2._get_value(i[0], 'two'),df2._get_value(i[0], 'three') ])
+            i = i + 1
+            count = count + 1
+    for j in df2_list:
+        print(j)
+    df2 = pandas.DataFrame(df2_list, columns=['four','five','six'])
+    df1.rename({'l': 'one', 'm': 'two','n':'three'}, axis=1, inplace=True)
     df1 = pandas.concat([df1,df2],axis = 1)
-    df1.insert(3,'4','')
-    print(df1)
-
-
+    df1.insert(3,'blank','')
+    
     # DROPPING BLANK LINES FROM DF1 AND DF2
 
     #df1.drop_duplicates(subset=['one'], keep=False, inplace=True)
@@ -120,6 +155,7 @@ print(os.path.dirname(os.path.realpath(__file__)))
 def merge_converter(filename):
     df = pandas.read_excel(final_path+filename)
     df['two_p_diff'] = df.two.diff()
+    df['five'] = pandas.to_numeric(df['five'])
     df['five_p_diff'] = df.five.diff()
     df.insert(7,'seven','')
 
@@ -325,10 +361,6 @@ def merge_converter(filename):
     df1.drop(columns=['14', 'p','q','r'] , inplace=True)
     print(df1)
 
-    writer2 = pandas.ExcelWriter('step2/main.xlsx', engine='xlsxwriter') 
-    df1.to_excel(writer2, sheet_name='Sheet1', index=False)
-    writer2.save()
-
     writer = pandas.ExcelWriter(final_path+f"merge_"+filename, engine='xlsxwriter')
     df.to_excel(writer, sheet_name='Sheet1', index=False)
     writer.save()
@@ -406,12 +438,12 @@ if __name__ == '__main__':
     #run_in_parallel_combine()
     combine_count = 0
     for j in xlsx_filenames:
-        #try:
-        combine_files(j)
-        #except Exception as e:
-        #    print("!! EXCEPTION OCCURED !!")
-        #    print(str(e))
-        #    pass
+        try:
+            combine_files(j)
+        except Exception as e:
+            print("!! EXCEPTION OCCURED !!")
+            print(str(e))
+            pass
 
 
         combine_count += 1
@@ -444,12 +476,12 @@ if __name__ == '__main__':
     #run_in_parallel_merge_converter()
     merge_count = 0
     for k in final_files:
-        try:
-            merge_converter(k)
-        except Exception as e:
-            print("!! EXCEPTION OCCURED !!")
-            print(str(e))
-            pass
+        #try:
+        merge_converter(k)
+        #except Exception as e:
+        #    print("!! EXCEPTION OCCURED !!")
+        #    print(str(e))
+        #    pass
 
 
         merge_count += 1
