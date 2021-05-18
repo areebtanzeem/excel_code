@@ -19,7 +19,7 @@ final_path = join(dirname(realpath(__file__)), 'final_files/')
 
 #main_count = 0
 def main(filename):
-    df = pandas.read_excel(filename, names=['one', 'two', 'three','four'],header=None)
+    df = pandas.read_csv(filename, names=['one', 'two', 'three','four'],header=None)
     del df['one']
     df = df.rename(columns={"two": "one", "three": "two","four":"three"})
     
@@ -78,8 +78,12 @@ def combine_files(filename2):
     index_of_secondary_time = []
     for time in index_main_time:
         index_number = df2.index[df2['one'] == time].tolist()
+        #if not index_number:
+        #    index_of_secondary_time.append(np.NaN)
+        #    print ("Index for value",index_number)
+        #else:    
         index_of_secondary_time.append(index_number)
-        #print ("Index for value",index_number,df2._get_value(index_number[0], 'one'))
+            #print ("Index for value",index_number)
     #print("Secondary time index")
     #print(index_of_secondary_time)
     df2_list = []
@@ -92,12 +96,15 @@ def combine_files(filename2):
             count = 0
             df2_list.append([ np.NaN,np.NaN,np.NaN ])
         else:
-            df2_list.append([ df2._get_value(index_of_secondary_time[i][0], 'one'),df2._get_value(index_of_secondary_time[i][0], 'two'),df2._get_value(index_of_secondary_time[i][0], 'three') ])
-            #print([ df2._get_value(i[0], 'one'),df2._get_value(i[0], 'two'),df2._get_value(i[0], 'three') ])
+            try:
+                df2_list.append([ df2._get_value(index_of_secondary_time[i][0], 'one'),df2._get_value(index_of_secondary_time[i][0], 'two'),df2._get_value(index_of_secondary_time[i][0], 'three') ])
+            except:
+                df2_list.append([ np.NaN,np.NaN,np.NaN ])
+
+            
             i = i + 1
             count = count + 1
-    for j in df2_list:
-        print(j)
+    
     df2 = pandas.DataFrame(df2_list, columns=['four','five','six'])
     df1.rename({'l': 'one', 'm': 'two','n':'three'}, axis=1, inplace=True)
     df1 = pandas.concat([df1,df2],axis = 1)
@@ -359,7 +366,7 @@ def merge_converter(filename):
     # DELETING P Q R ROWS FROM DF1
 
     df1.drop(columns=['14', 'p','q','r'] , inplace=True)
-    print(df1)
+    #print(df1)
 
     writer = pandas.ExcelWriter(final_path+f"merge_"+filename, engine='xlsxwriter')
     df.to_excel(writer, sheet_name='Sheet1', index=False)
@@ -370,6 +377,8 @@ def merge_converter(filename):
 
 def final_merge(filenames,final_sheet_data):
     writer = pandas.ExcelWriter(final_path+"Final File.xlsx", engine='xlsxwriter')
+    df2 = pandas.DataFrame(final_sheet_data)
+    df2.to_excel(writer, sheet_name="Final", index=False)
     final_merge_count = 0
     for name in filenames:
         try:
@@ -384,8 +393,7 @@ def final_merge(filenames,final_sheet_data):
         print(f'Final Merge Function {percent_final_merge}% Completed!')
 
 
-    df2 = pandas.DataFrame(final_sheet_data)
-    df2.to_excel(writer, sheet_name="Final", index=False)
+    
     writer.save()
 
 
@@ -401,7 +409,7 @@ if __name__ == '__main__':
         os.mkdir("final_files")
 
     ####    MAIN FUNCTION TAKES CSV_FILENAMES #######
-    csv_filenames = glob.glob('*.xlsx')
+    csv_filenames = glob.glob('*.csv')
     try:
         csv_filenames.remove('main.xlsx')
     except Exception as e:
@@ -438,12 +446,12 @@ if __name__ == '__main__':
     #run_in_parallel_combine()
     combine_count = 0
     for j in xlsx_filenames:
-        try:
-            combine_files(j)
-        except Exception as e:
-            print("!! EXCEPTION OCCURED !!")
-            print(str(e))
-            pass
+        #try:
+        combine_files(j)
+        #except Exception as e:
+        #    print("!! EXCEPTION OCCURED !!")
+        #    print(str(e))
+        #    pass
 
 
         combine_count += 1
@@ -476,12 +484,12 @@ if __name__ == '__main__':
     #run_in_parallel_merge_converter()
     merge_count = 0
     for k in final_files:
-        #try:
-        merge_converter(k)
-        #except Exception as e:
-        #    print("!! EXCEPTION OCCURED !!")
-        #    print(str(e))
-        #    pass
+        try:
+            merge_converter(k)
+        except Exception as e:
+            print("!! EXCEPTION OCCURED !!")
+            print(str(e))
+            pass
 
 
         merge_count += 1
@@ -498,7 +506,7 @@ if __name__ == '__main__':
 
     for name in final_files:
         if os.path.exists(final_path+name):
-            #os.remove(final_path+name)
+            os.remove(final_path+name)
             pass
 
     os.chdir('./final_files')
@@ -523,7 +531,7 @@ if __name__ == '__main__':
     for name in final_merge_files:
         if os.path.exists(final_path+name):
             pass
-            #os.remove(final_path+name)
+            os.remove(final_path+name)
 
     print("*****************************************")
     print("*****************************************")
